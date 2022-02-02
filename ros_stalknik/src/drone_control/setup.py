@@ -18,8 +18,13 @@ setup(
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],
+
+# In entry_points if you want to add an .exe from a .py file follow this format :
+# <.exe name> = <pkgname>.<filename>:main
     entry_points={
         'console_scripts': [
+                'node_control = drone_control.main:main',
         ],
+
     },
 )
