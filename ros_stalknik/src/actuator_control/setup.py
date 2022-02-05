@@ -13,13 +13,14 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='rikic',
-    maintainer_email='camille.ulrb@gmail.com',
-    description='TODO: Package description',
+    maintainer='nrodrigues64',
+    maintainer_email='nico.r648@gmail.com',
+    description='Publisher/subscriber for making the drone move to followw the car',
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'node_actuator = actuator_control.main:main',
         ],
     },
 )

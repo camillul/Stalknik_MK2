@@ -3,16 +3,18 @@
 <package format="3">
   <name>actuator_control</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
-  <maintainer email="camille.ulrb@gmail.com">rikic</maintainer>
+  <description>Publisher/subscriber for making the drone move to followw the car</description>
+  <maintainer email="nico.r648@gmail.com">nrodrigues64</maintainer>
   <license>TODO: License declaration</license>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
   <test_depend>python3-pytest</test_depend>
-
-  <export>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  
+	<export>
     <build_type>ament_python</build_type>
   </export>
 </package>
