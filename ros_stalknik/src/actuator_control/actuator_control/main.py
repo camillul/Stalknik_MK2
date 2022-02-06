@@ -11,7 +11,7 @@ class Actuator_node(Node):
         self.publisher_ = self.create_publisher(String, 'motor_mvmt', 10)
         self.subscription = self.create_subscription(
             Pose,
-            'drone_position',
+            'drone_command',
             self.drone_position_callback,
             10)
         self.subscription  # prevent unused variable warning
