@@ -3,7 +3,18 @@ from rclpy.node import Node
 
 from std_msgs.msg import String
 from geometry_msgs.msg import Pose
-pose = Pose();
+pose = Pose()
+
+def get_actuator_control(msg):
+
+    u1 = -10
+    u2 = -20
+    u3 = 30
+    u4 = 40
+
+    return u1,u2,u3,u4
+
+
 class Actuator_node(Node):
 
     def __init__(self):
@@ -17,7 +28,6 @@ class Actuator_node(Node):
         self.subscription  # prevent unused variable warning
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.actuator_command_callback)
-        
         self.i = float(0)
 
 
@@ -29,8 +39,8 @@ class Actuator_node(Node):
         msg.data = 'Go to: %d, %d, %d' % (pose.position.x, pose.position.y, pose.position.z)
         self.publisher_.publish(msg)
         self.get_logger().info('Publishing: "%s"' % msg.data)
+        
         self.i += 1
-
 
 
     def drone_position_callback(self,msg):
