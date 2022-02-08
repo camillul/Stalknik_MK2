@@ -20,6 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'node_img_acquisition = img_processing.main_img:main',
+            'node_img_process = img_processing.main_img_process:main'
         ],
     },
 )
