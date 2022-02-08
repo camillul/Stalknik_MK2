@@ -3,23 +3,14 @@ from rclpy.node import Node
 
 from std_msgs.msg import String
 from geometry_msgs.msg import Pose
-pose = Pose()
+from drone_interfaces.msg import Motor
 
-def get_actuator_control(msg):
-
-    u1 = -10
-    u2 = -20
-    u3 = 30
-    u4 = 40
-
-    return u1,u2,u3,u4
-
-
+pose = Pose();
 class Actuator_node(Node):
 
     def __init__(self):
         super().__init__('actuator_node')
-        self.publisher_ = self.create_publisher(String, 'motor_mvmt', 10)
+        self.publisher_ = self.create_publisher(Motor, 'motor_mvmt', 10)
         self.subscription = self.create_subscription(
             Pose,
             'drone_command',
@@ -35,11 +26,13 @@ class Actuator_node(Node):
 
     def actuator_command_callback(self):
     # TODO:05/02/2022:RODRIGUES:Implement this publisher
-        msg = String()
-        msg.data = 'Go to: %d, %d, %d' % (pose.position.x, pose.position.y, pose.position.z)
+        msg = Motor()
+        msg.m1 = pose.position.x 
+        msg.m2 = pose.position.y
+        msg.m3 = pose.position.z
+        msg.m4 = 4.0
         self.publisher_.publish(msg)
-        self.get_logger().info('Publishing: "%s"' % msg.data)
-        
+        self.get_logger().info('Publishing: "%s"' % msg)
         self.i += 1
 
 
