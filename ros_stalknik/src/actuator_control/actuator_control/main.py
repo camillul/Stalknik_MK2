@@ -19,7 +19,6 @@ class Actuator_node(Node):
         self.subscription  # prevent unused variable warning
         timer_period = 0.5  # seconds
         self.timer = self.create_timer(timer_period, self.actuator_command_callback)
-        
         self.i = float(0)
 
 
@@ -35,7 +34,6 @@ class Actuator_node(Node):
         self.publisher_.publish(msg)
         self.get_logger().info('Publishing: "%s"' % msg)
         self.i += 1
-
 
 
     def drone_position_callback(self,msg):
