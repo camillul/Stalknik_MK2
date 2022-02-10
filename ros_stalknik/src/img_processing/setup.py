@@ -21,7 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'node_img_acquisition = img_processing.main_img:main',
-            'node_img_process = img_processing.main_img_process:main'
+            'node_img_processing = img_processing.main_img_processing:main'
         ],
     },
 )

@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from cv_bridge import CvBridge
+from cv_bridge import *
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Pose
 import cv2
@@ -33,12 +33,19 @@ class ImgProcessNode(Node):
       msg.position.x = -float(self.i)
       msg.position.y = float(self.i)
       self.i += 2
-      self.carPositionPub_.publish(msg)
+      self.carPositionPub.publish(msg)
       self.get_logger().info('Publishing: "%s"' % msg.position)
-      self.get_logger().info('Publishing an image')
 
    def img_callback(self,msg):
-      self.get_logger().info('I received an : encoding "%s" "%d" , "%d" image format' % msg.encoding, msg.height, msg.width)
+    #   self.get_logger().info('I received an : encoding "%s" "%d" , "%d" image format' % msg.encoding, msg.height, msg.width)
+        height = msg.height
+        width = msg.width
+        channel = msg.step//msg.width
+        frame = np.reshape(msg.data, (height, width, channel))
+        # from frame, we can start post-processing
+        self.get_logger().info("Image Received")
+
+
 
 def main(args=None):
     rclpy.init(args=args)
