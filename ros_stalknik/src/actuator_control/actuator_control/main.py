@@ -17,8 +17,8 @@ class Actuator_node(Node):
             self.drone_position_callback,
             10)
         self.subscription  # prevent unused variable warning
-        timer_period = 0.5  # seconds
-        self.timer = self.create_timer(timer_period, self.actuator_command_callback)
+        self.timer_period = 0.5  # seconds
+        self.timer = self.create_timer(self.timer_period, self.actuator_command_callback)
         self.i = float(0)
 
 

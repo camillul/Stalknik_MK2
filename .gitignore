@@ -9,7 +9,7 @@ install/
 log/
 .vs/
 
-
+*.h5
 
 # C extensions
 *.so

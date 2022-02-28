@@ -23,7 +23,8 @@ setup(
 # <.exe name> = <pkgname>.<filename>:main
     entry_points={
         'console_scripts': [
-                'node_control = drone_control.main:main'
+                'node_control = drone_control.main:main',
+                'client_follow_up_mode = drone_control.client_mode:main'
         ],
 
     },

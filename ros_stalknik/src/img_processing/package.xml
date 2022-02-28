@@ -9,8 +9,7 @@
 
   <depend>libopencv-dev</depend>
   <depend>python3-numpy</depend>
-  <depend>sensor_msgs</depend>
-  <depend>cv_bridge</depend>
+
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
   <buildtool_depend>python_cmake_module</buildtool_depend>
@@ -23,9 +22,10 @@
   <build_depend>libboost-dev</build_depend>
   <build_depend>libboost-python-dev</build_depend>
   <build_depend version_gte="3.3.0">opencv3</build_depend>
-  <build_depend>cv_bridge</build_depend>
+
   <build_depend>rclpy</build_depend>
 
+  <exec_depend>imageai</exec_depend>
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>libboost-dev</exec_depend>
   <exec_depend>libboost-python-dev</exec_depend>
