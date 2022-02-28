@@ -52,7 +52,14 @@ if you want to use with a simulation:
 
 ### ROS architecture
 
-first iteration :
+iteration 1 :
+
+![My Image](https://github.com/camillul/Stalknik_MK2/blob/main/PFE_image/rosgraph10022022.png)
+
+iteration 2 :
+
+![My Image](https://github.com/camillul/Stalknik_MK2/blob/main/PFE_image/rosgraph22022022.png)
+
+iteration 3 :
 
 ![My Image](https://github.com/camillul/Stalknik_MK2/blob/main/PFE_image/rosgraph27022022.png)
-
