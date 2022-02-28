@@ -36,6 +36,7 @@ please install the version 14.2
 ### Setup
 
 You must use x86 Native Tools Command Prompt for VS 2019 as administrator, then :
+
 cd C:\Users\rikic\Documents\Projet\Stalknik_MK2\ros_stalknik && call C:\dev\ros2_galactic\local_setup.bat && colcon build --merge-install || call install\setup.bat
 
 
