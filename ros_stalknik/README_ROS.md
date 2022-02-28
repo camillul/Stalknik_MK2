@@ -9,7 +9,7 @@
 3. [Setup]
 4. [Launcher]
 5. [ROS architecture]
-
+6. [Test]
 
 ### Introduction
 
@@ -37,9 +37,10 @@ please install the version 14.2
 
 You must use x86 Native Tools Command Prompt for VS 2019 as administrator, then :
 
-cd C:\Users\rikic\Documents\Projet\Stalknik_MK2\ros_stalknik && call C:\dev\ros2_galactic\local_setup.bat && colcon build --merge-install || call install\setup.bat
+cd <path to repository>\Stalknik_MK2\ros_stalknik && call <path to ros>\ros2_galactic\local_setup.bat && colcon build --merge-install || call install\setup.bat
 
-
+This warning should appear :
+"[rti_connext_dds_cmake_module][warning] RTI Connext DDS environment script not found (\resource\scripts\rtisetenv_x64Win64VS2017.bat). RTI Connext DDS will not be available at runtime, unless you already configured PATH manually."
 
 ### Launcher
 
@@ -64,3 +65,10 @@ iteration 2 :
 iteration 3 :
 
 ![My Image](https://github.com/camillul/Stalknik_MK2/blob/main/PFE_image/rosgraph27022022.png)
+
+### Test
+
+To test packages, you can call with pytest :
+-pytest <path_to_file>
+
+launch_test from ros packages seems more appropriate (in progress)

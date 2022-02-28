@@ -6,7 +6,7 @@ from geometry_msgs.msg import Pose
 from drone_interfaces.msg import Motor
 
 pose = Pose();
-class Actuator_node(Node):
+class ActuatorNode(Node):
 
     def __init__(self):
         super().__init__('actuator_node')
@@ -47,7 +47,7 @@ class Actuator_node(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    actuator = Actuator_node()
+    actuator = ActuatorNode()
     rclpy.spin(actuator)
 
     # Destroy the node explicitly
