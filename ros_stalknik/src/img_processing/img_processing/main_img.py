@@ -16,7 +16,6 @@ class ImgNode(Node):
         self.im_list = []
         self.cv_image = cv2.imread('C:/Users/rikic/Documents/Projet/Stalknik_MK2/ros_stalknik/src/img_processing/img_processing/sample1.png') 
         self.get_logger().info('Found test image')
-        self.bridge = CvBridge()
         self.i = 0
 
     def img_callback(self):

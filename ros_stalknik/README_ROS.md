@@ -68,7 +68,7 @@ iteration 3 :
 
 ### Test
 
-To test packages, you can call with pytest :
--pytest <path_to_file>
+To test
 
-launch_test from ros packages seems more appropriate (in progress)
+launch_test <path to test file>
+

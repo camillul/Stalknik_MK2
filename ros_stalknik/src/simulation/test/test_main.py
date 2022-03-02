@@ -35,21 +35,21 @@ from simulation.dynamic_sim import *
 # from scipy.linalg import expm
 # import numpy as np
 
-# @pytest.mark.launch_test
-# @launch_testing.markers.keep_alive
-# def generate_test_description():
-#     return launch.LaunchDescription([
-#         launch.actions.TimerAction(
-#             period=5.0,
-#             actions=[
-#                 launch_ros.actions.Node(
-#                     executable='node_simulation',
-#                     package='simulation',
-#                     name='node_simulation'
-#                 ),
-#             ]),
-#         launch_testing.actions.ReadyToTest()
-#     ])
+@pytest.mark.launch_test
+@launch_testing.markers.keep_alive
+def generate_test_description():
+    return launch.LaunchDescription([
+        launch.actions.TimerAction(
+            period=5.0,
+            actions=[
+                launch_ros.actions.Node(
+                    executable='node_simulation',
+                    package='simulation',
+                    name='node_simulation'
+                ),
+            ]),
+        launch_testing.actions.ReadyToTest()
+    ])
 
 
 class test_launch(unittest.TestCase):
