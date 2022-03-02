@@ -1,0 +1,3 @@
+node_img_processing:
+  ros__parameters:
+    my_yolo_file : "file:///Users/rikic/Documents/Projet/Stalknik_MK2/ros_stalknik/src/img_processing/resource/yolo.h5"

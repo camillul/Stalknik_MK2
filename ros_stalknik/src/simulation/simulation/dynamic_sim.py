@@ -82,15 +82,23 @@ class SimulationNode(Node):
     def __init__(self):
         super().__init__('simulation_node')
 
+
+        my_dae_file = self.declare_parameter('my_dae_file').get_parameter_value().string_value
+
+        # step time for dynamic
+        self.dt = 0.05
+
         # State variable
+        # x, y, z are position variable respectively on x, y, z axis
         self.x= float(1) 
         self.y= float(1) 
         self.z= float(0) 
-
+         # thetax, thetay, thetaz are rotation variable respectively on x, y, z axis
         self.thetax = float(0) 
         self.thetay = float(0) 
         self.thetaz = float(0)
 
+        # _dot means derivative
         self.x_dot= float(0) 
         self.y_dot= float(0) 
         self.z_dot= float(0) 
@@ -109,6 +117,11 @@ class SimulationNode(Node):
         # self.u2 = float(221.49) 
         # self.u3 = float(221.49)
         # self.u4 = float(221.49)
+
+
+
+        # TODO::Ricky:01:03:2022: Draw/Comment a scheme for motor
+
         self.u1 = float(0) 
         self.u2 = float(0) 
         self.u3 = float(0)
@@ -116,7 +129,7 @@ class SimulationNode(Node):
 
 
         self.speedLimit = 20
-        self.rotLimit = math.pi
+        self.rotLimit = math.pi*10
         # self.speedLimit = 100000
         # self.rotLimit = 100000
 
@@ -127,6 +140,7 @@ class SimulationNode(Node):
         # coeffiecient for counter rotation
         self.d = 1
         # (z_dot_dot,θx_dot_dot, θy_dot_dot, θz_dot_dot) = B*(u1,u2,u3,u4)
+        # then for instance thetax change on u1 and u3
         self.B=np.array([[self.b,self.b,self.b,self.b],[-self.b*self.arm_length,0,self.b*self.arm_length,0],[0,-self.b*self.arm_length,0,self.b*self.arm_length],[-self.d,self.d,-self.d,self.d]]) 
         # Inertial matrix
         self.I=np.array([[10,0,0],[0,10,0],[0,0,20]])
@@ -144,7 +158,7 @@ class SimulationNode(Node):
 
         self.actuator_sub  # prevent unused variable warning
         # time step
-        self.dt = 0.1
+        
 
         # self.tfPub = self.create_publisher(msg_type=TFMessage, topic="/tf", qos_profile = 10)
         # self.tf_static_Pub = self.create_publisher(msg_type=TFMessage, topic="/tf_static", qos_profile = 10)
@@ -180,11 +194,11 @@ class SimulationNode(Node):
         msg.pose.position.x = float(self.x)
         msg.pose.position.y = float(self.y)
         msg.pose.position.z = float(self.z)
-        q2 = quaternion_from_euler(self.thetax,self.thetay,self.thetaz)
-        msg.pose.orientation.x = q2[0]
-        msg.pose.orientation.y = q2[1]
-        msg.pose.orientation.z = q2[2]
-        msg.pose.orientation.w = q2[3]
+        quaternion_drone = quaternion_from_euler(self.thetax,self.thetay,self.thetaz)
+        msg.pose.orientation.x = quaternion_drone[0]
+        msg.pose.orientation.y = quaternion_drone[1]
+        msg.pose.orientation.z = quaternion_drone[2]
+        msg.pose.orientation.w = quaternion_drone[3]
 
 
 
@@ -192,51 +206,51 @@ class SimulationNode(Node):
         # self.mapPub.publish(msg2)
         self.get_logger().info('Publishing simulation Position : "%s"' % msg.pose.position)
 
-    def make_transforms(self):
 
-        # TF side
-        tf_msg = TFMessage()
-
-        ts2_msg = TransformStamped()
-        ts2_msg.header.stamp = self.get_clock().now().to_msg()
-        ts2_msg.child_frame_id = "Stalknik"
-        ts2_msg.header.frame_id = "map"
-        ts2_msg.transform.translation.x = float(self.x)
-        ts2_msg.transform.translation.y = float(self.y)
-        ts2_msg.transform.translation.z = float(self.z)
-        q2 = quaternion_from_euler(self.thetax,self.thetay,self.thetaz)
-        ts2_msg.transform.rotation.x = q2[0]
-        ts2_msg.transform.rotation.y = q2[1]
-        ts2_msg.transform.rotation.z = q2[2]
-        ts2_msg.transform.rotation.w = q2[3]
-
-        self._tf_publisher.sendTransform(ts2_msg)
 
 
 
     def make_transforms_static(self):
 
-        ts1_msg = TransformStamped()
-        ts1_msg.header.stamp = self.get_clock().now().to_msg()
-        ts2_msg.header.frame_id = "map"
-        ts1_msg.transform.translation.x = float(0)
-        ts1_msg.transform.translation.y = float(0)
-        ts1_msg.transform.translation.z = float(0)
-        q1 = quaternion_from_euler(float(0),float(0),float(0))
-        ts1_msg.transform.rotation.x = q1[0]
-        ts1_msg.transform.rotation.y = q1[1]
-        ts1_msg.transform.rotation.z = q1[2]
-        ts1_msg.transform.rotation.w = q1[3]
+        transform_map_msg = TransformStamped()
+        transform_map_msg.header.stamp = self.get_clock().now().to_msg()
+        transform_drone_msg.header.frame_id = "map"
+        transform_map_msg.transform.translation.x = float(0)
+        transform_map_msg.transform.translation.y = float(0)
+        transform_map_msg.transform.translation.z = float(0)
+        quaternion_map = quaternion_from_euler(float(0),float(0),float(0))
+        transform_map_msg.transform.rotation.x = quaternion_map[0]
+        transform_map_msg.transform.rotation.y = quaternion_map[1]
+        transform_map_msg.transform.rotation.z = quaternion_map[2]
+        transform_map_msg.transform.rotation.w = quaternion_map[3]
 
-        # tf_msg.transforms.append(ts1_msg)
-        # tf_msg.transforms.append(ts2_msg)
+        # tf_msg.transforms.append(transform_map_msg)
+        # tf_msg.transforms.append(transform_drone_msg)
 
-        self._tf_publisher_static.sendTransform(ts1_msg)
+        self._tf_publisher_static.sendTransform(transform_map_msg)
         # self.tfPub.publish(tf_msg)
 
 
 
+    def make_transforms(self):
 
+        # TF side
+        tf_msg = TFMessage()
+
+        transform_drone_msg = TransformStamped()
+        transform_drone_msg.header.stamp = self.get_clock().now().to_msg()
+        transform_drone_msg.child_frame_id = "Stalknik"
+        transform_drone_msg.header.frame_id = "map"
+        transform_drone_msg.transform.translation.x = float(self.x)
+        transform_drone_msg.transform.translation.y = float(self.y)
+        transform_drone_msg.transform.translation.z = float(self.z)
+        quaternion_drone = quaternion_from_euler(self.thetax,self.thetay,self.thetaz)
+        transform_drone_msg.transform.rotation.x = quaternion_drone[0]
+        transform_drone_msg.transform.rotation.y = quaternion_drone[1]
+        transform_drone_msg.transform.rotation.z = quaternion_drone[2]
+        transform_drone_msg.transform.rotation.w = quaternion_drone[3]
+
+        self._tf_publisher.sendTransform(transform_drone_msg)
 
 
     def actuator_callback(self,msg): 
@@ -265,35 +279,46 @@ class SimulationNode(Node):
         dp=E@vr
         # la matrice adjointe est nécéssaire pour la formule axe-angle et en avoir une matrice de rotation (provient d'un produit vectoriel)
         dvr=-adjoint(wr)@vr+inv(E)@np.array([[0],[0],[self.g]])+np.array([[0],[0],[-torque[0]/self.m]])  
-        dtheta= eulerderivative(self.thetax,self.thetay,self.thetaz) @ wr     
+        dtheta= eulerderivative(self.thetax,self.thetay,self.thetaz) @ wr 
+         
         dwr= inv(self.I)@(-adjoint(wr)@self.I@wr+torque[1:4].reshape(3,1)) 
 
         dstate = np.vstack((dp,dtheta,dvr,dwr)).flatten()
-        self.state = self.state + dstate
+        self.state = self.state + self.dt*dstate
 
-        # self.get_logger().info('dstate : "%s"' %dstate)
-        # self.get_logger().info('state : "%s"' %self.state)
-        # self.get_logger().info('result : "%s"' %self.state)
-
-        self.x= self.state[0]
-        self.y= self.state[1]
+        self.state[6]= min(max(-self.speedLimit ,self.state[6]),self.speedLimit)
+        self.state[7]= min(max(-self.speedLimit ,self.state[7]),self.speedLimit)  
+        self.state[8]= min(max(-self.speedLimit ,self.state[8]),self.speedLimit)
+        self.state[9] = min(max(-self.rotLimit ,self.state[9]),self.rotLimit)
+        self.state[10] = min(max(-self.rotLimit ,self.state[10]),self.rotLimit)
+        self.state[11] = min(max(-self.rotLimit ,self.state[11]),self.rotLimit)
         # z can't be negative because else it would mean the drone is under the ground
         # though the real limite is not 0 i depend on ground altitude
         if (self.state[2] < 0 ):
             self.state[2]= 0
-            self.state[8] = 0
+            self.state[8] = 0       
+
+        self.get_logger().info('dstate : "%s"' %dstate)
+        self.get_logger().info('state : "%s"' %self.state)
+        self.get_logger().info('result : "%s"' %self.state)
+
+        self.x= self.state[0]
+        self.y= self.state[1]
         self.z= self.state[2]
+        
         self.thetax = self.state[3] 
         self.thetay = self.state[4]
         self.thetaz = self.state[5]
-        # Physical limits implie acc and speed have a maximum (otherwise we would have an infinite energy sometime)
-        self.x_dot= min(max(-self.speedLimit ,self.state[6]),self.speedLimit)
-        self.y_dot= min(max(-self.speedLimit ,self.state[7]),self.speedLimit)  
-        self.z_dot= min(max(-self.speedLimit ,self.state[8]),self.speedLimit)
 
-        self.thetax_dot = min(max(-self.rotLimit ,self.state[9]),self.rotLimit)
-        self.thetay_dot = min(max(-self.rotLimit ,self.state[10]),self.rotLimit)
-        self.thetaz_dot = min(max(-self.rotLimit ,self.state[11]),self.rotLimit)
+        self.x_dot = self.state[6]
+        self.y_dot = self.state[7]
+        self.z_dot = self.state[8]
+
+        self.thetax_dot = self.state[9] 
+        self.thetay_dot = self.state[10]
+        self.thetaz_dot = self.state[11]        
+        # Physical limits implie acc and speed have a maximum (otherwise we would have an infinite energy sometime)
+
 
 
 

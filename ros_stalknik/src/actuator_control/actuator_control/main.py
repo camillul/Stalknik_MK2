@@ -6,7 +6,7 @@ from geometry_msgs.msg import Pose
 from drone_interfaces.msg import Motor
 
 pose = Pose();
-class ActuatorNode(Node):
+class Actuator_node(Node):
 
     def __init__(self):
         super().__init__('actuator_node')
@@ -27,10 +27,10 @@ class ActuatorNode(Node):
     def actuator_command_callback(self):
     # TODO:05/02/2022:RODRIGUES:Implement this publisher
         msg = Motor()
-        msg.m1 = pose.position.x 
-        msg.m2 = pose.position.y
-        msg.m3 = pose.position.z
-        msg.m4 = 4.0
+        msg.m1 = float(300)
+        msg.m2 = float(100)
+        msg.m3 = float(300)
+        msg.m4 = float(100)
         self.publisher_.publish(msg)
         self.get_logger().info('Publishing: "%s"' % msg)
         self.i += 1
@@ -47,7 +47,7 @@ class ActuatorNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    actuator = ActuatorNode()
+    actuator = Actuator_node()
     rclpy.spin(actuator)
 
     # Destroy the node explicitly
