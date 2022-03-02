@@ -51,7 +51,7 @@ class ImgProcessNode(Node):
       # init a 0 and update each time from_xy_to_car_pos is called
       self.max_fov_dist_x = 0
 
-   def from_xy_to_car_pos(self,x,y)
+   def from_xy_to_car_pos(self,x,y):
 
       self.min_fov_dist_x = self.drone_pos_vec[2] / np.tan(cam_angle - horizontal_angle_of_view/2)
       self.max_fov_dist_x = self.drone_pos_vec[2] / np.tan(cam_angle + horizontal_angle_of_view/2)
