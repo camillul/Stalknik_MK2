@@ -5,8 +5,11 @@ import numpy
 import torch
 
 from PIL import Image, ImageTk
-# from simple_image_viewer import SimpleImageViewer
+
+
+#Load pretrained AI Model 
 model = torch.hub.load('ultralytics/yolov5', 'custom', path='./trained_carmodel/car_cozmo.pt')
+
 #Proportional corrector coefficients
 K=0.2
 C=0.3
@@ -31,18 +34,10 @@ def stream_camera(robot: cozmo.robot.Robot):
     robot.camera.image_stream_enabled = True
     robot.camera.color_image_enabled  = False
 
-    #image_view = SimpleImageViewer(w=320,h=240)
-
     while True:
         latest_image = robot.world.latest_image #Save latest image send by the camera
 
         if latest_image is not None:
-            # PIL IMAGE SHOW
-            # im = latest_image.raw_image
-            # open_cv_image = numpy.array(im) 
-            # ocvim = cv2.cvtColor(open_cv_image, cv2.COLOR_RGB2BGR)
-            # image = ImageTk.PhotoImage(im)
-            # image_view.update_image(image)
 
             #OPENCV IMAGE SHOW
             im = latest_image.raw_image
