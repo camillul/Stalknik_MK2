@@ -19,20 +19,20 @@ sys.path.append("../")
 from actuator_control.main import *
 
 @pytest.mark.launch_test
-# @launch_testing.markers.keep_alive
-# def generate_test_description():
-#     return launch.LaunchDescription([
-#         launch.actions.TimerAction(
-#             period=5.0,
-#             actions=[
-#                 launch_ros.actions.Node(
-#                     executable='node_actuator',
-#                     package='actuator_control',
-#                     name='node_actuator'
-#                 ),
-#             ]),
-#         launch_testing.actions.ReadyToTest()
-#     ])
+@launch_testing.markers.keep_alive
+def generate_test_description():
+    return launch.LaunchDescription([
+        launch.actions.TimerAction(
+            period=5.0,
+            actions=[
+                launch_ros.actions.Node(
+                    executable='node_actuator',
+                    package='actuator_control',
+                    name='node_actuator'
+                ),
+            ]),
+        launch_testing.actions.ReadyToTest()
+    ])
 
 class test_launch(unittest.TestCase):
 

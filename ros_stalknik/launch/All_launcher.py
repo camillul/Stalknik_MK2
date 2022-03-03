@@ -1,34 +1,45 @@
-
+import os
+from glob import glob
+from ament_index_python import get_package_share_directory
 
 from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument
+from launch.actions import IncludeLaunchDescription
+from launch.actions import GroupAction
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
+from launch.substitutions import TextSubstitution
 from launch_ros.actions import Node
+from launch_ros.actions import PushRosNamespace
 
 def generate_launch_description():
+
+    launch_include_actuator_control = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('actuator_control'),
+                'launch','local.launch.py') )
+    )
+
+    launch_include_drone_control = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('drone_control'),
+                'launch','local.launch.py') )
+    )
+
+    launch_include_img_processing = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('img_processing'),
+                'launch','local.launch.py') )
+    )
+
+
+
     return LaunchDescription([
-        Node(
-            package='img_processing',
-            namespace='Stalknik',
-            executable='node_img_processing',
-            name='node_img_processing'
-        ),
-        Node(
-            package='img_processing',
-            namespace='Stalknik',
-            executable='node_img_acquisition',
-            name='node_img_acquisition'
-        ),
-        Node(
-            package='drone_control',
-            namespace='Stalknik',
-            executable='node_control',
-            name='node_control',
-            
-        ),
-        Node(
-            package='actuator_control',
-            namespace='Stalknik',
-            executable='node_actuator',
-            name='node_actuator',
-            
-        )
+
+        launch_include_actuator_control,
+        launch_include_drone_control,
+        launch_include_img_processing
     ])
