@@ -16,16 +16,10 @@ def stream_camera(robot: cozmo.robot.Robot):
     #### Robot initialisation ####
 
     #Lift initialisation
-    robot.move_lift(5)
-    time.sleep(0.5)
-    robot.move_lift(0)
+    robot.set_lift_height(100.0).wait_for_completed()
 
     #Head initialisation
-    robot.move_head(-2)
-    time.sleep(0.3)
-    robot.move_head(0.7)
-    time.sleep(0.3)
-    robot.move_head(0)
+    robot.set_head_angle(cozmo.util.Angle(numpy.deg2rad(0))).wait_for_completed()
 
     #Enable camera stream and set color to grayscale (better resolution)
     robot.camera.image_stream_enabled = True
