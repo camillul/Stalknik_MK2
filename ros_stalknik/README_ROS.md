@@ -32,6 +32,10 @@ Follow ROS Galactic installation instruction
 https://sourceforge.net/projects/boost/
 please install the version 14.2
 
+-For PX4 (Offboard control, drone control):
+Follow instruction here: https://docs.px4.io/master/en/ros/ros2_comm.html
+Be aware that px4_ros_com and px4_msgs are already import in this git as submodule; if you sucessfully clone this repository you just need to build the two packages. 
+Note that you need to build px4_msgs before px4_ros_com
 
 ### Setup
 
