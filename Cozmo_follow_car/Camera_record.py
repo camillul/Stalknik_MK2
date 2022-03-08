@@ -12,16 +12,10 @@ def stream_camera(robot: cozmo.robot.Robot):
     #### Robot initialisation ####
 
     #Lift initialisation
-    robot.move_lift(5)
-    time.sleep(0.5)
-    robot.move_lift(0)
+    robot.set_lift_height(100.0).wait_for_completed()
 
     #Head initialisation
-    robot.move_head(-2)
-    time.sleep(0.3)
-    robot.move_head(0.7)
-    time.sleep(0.3)
-    robot.move_head(0)
+    robot.set_head_angle(cozmo.util.Angle(numpy.deg2rad(-15))).wait_for_completed()
 
     #Enable camera stream and set color to grayscale (better resolution)
     robot.camera.image_stream_enabled = True
@@ -31,7 +25,7 @@ def stream_camera(robot: cozmo.robot.Robot):
 
     #out = cv2.VideoWriter('outpy2.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 30, (320,240))
 
-    for i in range(100) :
+    for i in range(33) :
         latest_image = robot.world.latest_image #Save latest image send by the camera
 
         if latest_image is not None:
@@ -48,7 +42,8 @@ def stream_camera(robot: cozmo.robot.Robot):
             #ocvim = cv2.cvtColor(open_cv_image, cv2.COLOR_RGB2BGR) #For colored images
             #out.write(open_cv_image)
             cv2.imshow('frame',open_cv_image) # Image Display
-            cv2.imwrite("Calibration {0}.jpg".format(i),open_cv_image)
+            if i >= 29:
+                cv2.imwrite("Calibration {0}.jpg".format(i),open_cv_image)
 
         
         if cv2.waitKey(33) == 27:
