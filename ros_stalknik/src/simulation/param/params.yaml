@@ -1,3 +1,4 @@
-node_img_processing:
-  ros__parameters:
-    my_yolo_file : "file:///Users/rikic/Documents/Projet/Stalknik_MK2/ros_stalknik/src/img_processing/resource/yolo.h5"
+/Stalknik:
+  node_simulation:
+    ros__parameters:
+      my_dae_file: 'file:///Users/rikic/Documents/Projet/Stalknik_MK2/ros_stalknik/src/simulation/resource/drone.dae'

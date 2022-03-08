@@ -80,10 +80,14 @@ class SimulationNode(Node):
 
 
     def __init__(self):
-        super().__init__('simulation_node')
+        super().__init__('node_simulation')
 
 
-        my_dae_file = self.declare_parameter('my_dae_file').get_parameter_value().string_value
+        # my_dae_file = self.declare_parameter('my_dae_file').get_parameter_value().string_value
+        # my_dae_file = self.declare_parameter('my_dae_file').get_parameter_value()
+        self.declare_parameter('/Stalknik/my_dae_file','error')
+        self.my_dae_file = self.get_parameter('/Stalknik/my_dae_file').get_parameter_value().string_value
+        self.get_logger().info('dae param : "%s"' % self.my_dae_file)
 
         # step time for dynamic
         self.dt = 0.05
@@ -185,7 +189,7 @@ class SimulationNode(Node):
         msg.action = 0
         msg.type = 10
         msg.id = 1
-        msg.mesh_resource = "file:///Users/rikic/Documents/Projet/Stalknik_MK2/ros_stalknik/src/simulation/resource/drone.dae"
+        # msg.mesh_resource = self.my_dae_file
         msg.color.a = 1.0
         msg.scale.x = 1.0
         msg.scale.y = 1.0

@@ -1,7 +1,6 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
-from cv_bridge import *
 from sensor_msgs.msg import Image
 import cv2
 import numpy as np
@@ -14,29 +13,66 @@ class ImgNode(Node):
         self.timer = self.create_timer(timer_period, self.img_callback)
 
         self.im_list = []
-        self.cv_image = cv2.imread('C:/Users/rikic/Documents/Projet/Stalknik_MK2/ros_stalknik/src/img_processing/img_processing/sample1.png') 
-        self.get_logger().info('Found test image')
+
+        
+
+        # self.declare_parameters(
+        #     namespace='Stalknik',
+        #     parameters=[
+        #         ('IsTest',None)
+        #         ('my_video_file',None),
+        #     ])
+
+
+        self.declare_parameter('/Stalknik/IsTest',False)
+        self.IsTest = self.get_parameter('/Stalknik/IsTest').get_parameter_value()
+
+        self.declare_parameter('/Stalknik/my_video_file','error')
+        self.my_video_file = self.get_parameter('/Stalknik/my_video_file').get_parameter_value().string_value
+
+        
         self.i = 0
 
-    def img_callback(self):
-        # self.imagePub.publish(self.bridge.cv2_to_imgmsg(np.array(self.cv_image), "bgr8"))
-        # self.get_logger().info('Publishing an image')
-        frame = self.cv_image
-        # processes image data and converts to ros 2 message
-        msg = Image()
-        msg.header.stamp = Node.get_clock(self).now().to_msg()
-        msg.header.frame_id = 'ANI717'
-        msg.height = np.shape(frame)[0]
-        msg.width = np.shape(frame)[1]
-        msg.encoding = "bgr8"
-        msg.is_bigendian = False
-        msg.step = np.shape(frame)[2] * np.shape(frame)[1]
-        msg.data = np.array(frame).tobytes()
 
-        # publishes message
-        self.imagePub.publish(msg)
-        self.get_logger().info('%d Images Published' % self.i)
-        self.i += 1
+    def img_callback(self):
+
+        if self.IsTest:
+            self.get_logger().info('TEST Video')
+            cap = cv2.VideoCapture(self.my_video_file) 
+
+            while(cap.isOpened()): 
+                ret, frame = cap.read() 
+                if ret == True: 
+                    cv2.imshow('Frame', frame) 
+                    msg = Image()
+                    msg.header.stamp = Node.get_clock(self).now().to_msg()
+                    msg.header.frame_id = 'TestVideo'
+                    msg.height = np.shape(frame)[0]
+                    msg.width = np.shape(frame)[1]
+                    msg.encoding = "bgr8"
+                    msg.is_bigendian = False
+                    msg.step = np.shape(frame)[2] * np.shape(frame)[1]
+                    msg.data = np.array(frame).tobytes()
+
+                    # publishes message
+                    self.imagePub.publish(msg)
+                    self.get_logger().info('%d Images Published' % self.i)
+                    self.i += 1
+
+
+                    if cv2.waitKey(25) & 0xFF == ord('q'): 
+                        break
+                
+                
+                else:  
+                    break
+                
+                cap.release() 
+            # self.imagePub.publish(self.bridge.cv2_to_imgmsg(np.array(self.cv_image), "bgr8"))
+            # self.get_logger().info('Publishing an image')
+            # frame = self.cv_image
+            # processes image data and converts to ros 2 message
+
 
 def main(args=None):
     rclpy.init(args=args)
