@@ -31,10 +31,6 @@ cx = MatrixCamera[0][2]
 cy = MatrixCamera[1][2]
 
 
-# Definition of a function capable of remapping data from one scale to another
-def mapping(x, in_min, in_max, out_min, out_max):
-    return float((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
-
 ###### Cozmo Program ######
 
 def stream_camera(robot: cozmo.robot.Robot):
@@ -51,7 +47,7 @@ def stream_camera(robot: cozmo.robot.Robot):
     robot.camera.image_stream_enabled = True
     robot.camera.color_image_enabled  = False
 
-    #Proportional corrector coefficients rotation
+    #Proportional corrector coefficients of rotational speed
     K=0.2
 
     # Variables initialisation
@@ -65,91 +61,68 @@ def stream_camera(robot: cozmo.robot.Robot):
     detection = "start"
     signe = False
 
-    backpack_orange_color = cozmo.lights.Light(cozmo.lights.Color(rgb=(255,127,0)))
-
     while True:
-        latest_image = robot.world.latest_image #Save latest image send by the camera
+        #Save latest image send by the camera
+        latest_image = robot.world.latest_image 
 
         if latest_image is not None:
-
-            #OPENCV IMAGE SHOW
+            
+            # Conversion of the image in numpy array, so that it can be used with OpenCV
             im = latest_image.raw_image
             open_cv_image = np.array(im) 
-            #ocvim = cv2.cvtColor(open_cv_image, cv2.COLOR_RGB2BGR) #For colored images
 
-            detection = model(open_cv_image, size=320)  # includes NMS
+            # Detection by inference to find the car in the image with pretrained AI Model loaded before
+            detection = model(open_cv_image, size=320)
 
+            # Result of the Detection
             results_np = detection.pred[0].cpu().detach().numpy()
             
+            # Draw a rectangle arround the car if the detection ratio is more than 30%
+            # It uses xa, ya, xb, yb which are the coordinates of the 4 corners of the box detection
+            # given by the result variable of the detection "result_np"
             for result in results_np:
                 xa, ya, xb, yb, conf, cls = result
                 if conf > 0.3:
                     x1, y1, x2, y2 = [round(f) for f in [xa, ya, xb, yb]]
 
                 cv2.rectangle(open_cv_image,(x1,y1),(x2,y2),(0,255,255),2)
-                #cv2.putText(open_cv_image,'%f' % conf,(x1, y1),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1)
-            
-                #detection.print()
 
             # Car bottom middle point in the image in pixels
             Car_BM_point_u = x1+(x2-x1)/2
             Car_BM_point_v = y2
 
-
             # (x,y) are the coordinates of the projection point in pixels
             x = (Car_BM_point_u - cx)/fx
             y = (Car_BM_point_v - cy)/fy
 
+            # Calculation of the coordinates of the point of intersection between the plane of the ground 
+            # and the vector corresponding to the selected point of the image, along the optical axis
             C_r = T_robot_camera @ np.array ([0,0,0,1])
             P_r = T_robot_camera @ np.array ([x,y,1,1])
 
             gamma = -C_r[2]/(P_r[2]-C_r[2])
 
-            # (x,y) are the coordinates of the Car bottom middle point in the landmark of the robot
+            # (xp,yp) are the coordinates of the Car bottom middle point in the robot landmark
             xp = C_r[0] + gamma * (P_r[0] - C_r[0])
             yp = C_r[1] + gamma * (P_r[1] - C_r[1])
-
 
             # Width and Height of the detection rectangle
             w = x2-x1
             h = y2-y1
-
-            # # Control law of the linear speed of Cozmo
-            # line_speed = 240-h
-            # line_speed = mapping(line_speed,85,210,0,25)
-            # line_speed = 1.2**line_speed-1
-
-            # # Control law of the linear speed of Cozmo
-            # rot_speed = (160-(x1+(w/2)))
-            # #rot_speed=0
-
-            # # if result == "start": 
-            # #     # set all of Cozmo's backpack lights to orange
-            # #     robot.set_all_backpack_lights(backpack_orange_color)
-            # # elif result in results_numpy:
-            # #     # set all of Cozmo's backpack lights to green
-            # #     robot.set_all_backpack_lights(cozmo.lights.green_light)
-            # # else:
-            # #     # set all of Cozmo's backpack lights to red
-            # #     robot.set_all_backpack_lights(cozmo.lights.red_light)
-            # #     #line_speed = 10
-
-            # r_rot_wheel = line_speed+K*rot_speed
-            # l_rot_wheel = line_speed-K*rot_speed
 
             # Control law of the linear speed of Cozmo
             line_speed = xp*0.3
             if line_speed >= 120:
                 line_speed = 20
                 
-            #line_speed = mapping(line_speed,20,500,0,25)
-            #line_speed = 1.2**line_speed-1
-            #line_speed = 0
+            # Control law of the rotationnal speed of Cozmo
             rot_speed_old = rot_speed
-            # Control law of the linear speed of Cozmo
-            #rot_speed = -yp
             rot_speed = (160-(x1+(w/2)))
-            #rot_speed=0
+
+            # Dection of a change of rotation direction
+            # Cozmo robot has priorization for a null command send its motors so, we want the
+            # to send him 
+            # TO BE TESTED
             signe = bool(np.sign(rot_speed)+1)
             signe_old = bool(np.sign(rot_speed_old)+1)
             
@@ -157,22 +130,26 @@ def stream_camera(robot: cozmo.robot.Robot):
                 rot_speed = 0
                 print('change')
 
+            # Combination of rotational and linear speed to send a command to Cozmo wheels.
             r_rot_wheel = line_speed+K*rot_speed
             l_rot_wheel = line_speed-K*rot_speed
+
+            # If the distance between the robot center (in the robot landmark) and the bottom of the rear
+            # of the car is less than 80mm, stop the robot
             if xp <= 80:
                 r_rot_wheel = 0
                 l_rot_wheel = 0
 
+            # Cast command to int, because float takes more time to be processed by the robot, and then,
+            # the lantency between the command send and the effectivness of it is reduced
             r_rot_wheel = (int)(r_rot_wheel)
             l_rot_wheel = (int)(l_rot_wheel)
-
-            #print(line_speed,rot_speed, xp,yp, r_rot_wheel,l_rot_wheel)
             
+            # Send the wheels command to Cozmo
             robot.drive_wheels(l_rot_wheel, r_rot_wheel)
-                
-            #time.sleep(0.1)
-            cv2.imshow('frame',open_cv_image) # Image Display
-            #cv2.imwrite("template {0}.jpg".format(i),open_cv_image)
+            
+            # Image Display
+            cv2.imshow('landmark',open_cv_image) 
 
         # Press "esc" to quit the program
         if cv2.waitKey(33) == 27:
