@@ -100,13 +100,13 @@ print(t_vecs)
 
 #Distortion
 
-# img = cv2.imread('Calibration 29.jpg')
-# h,  w = img.shape[:2]
-# newcameramtx, roi = cv2.getOptimalNewCameraMatrix(matrix, distortion, (w,h), 1, (w,h))
+img = cv2.imread('Calibration 100.jpg')
+h,  w = img.shape[:2]
+newcameramtx, roi = cv2.getOptimalNewCameraMatrix(matrix, distortion, (w,h), 1, (w,h))
 
-# # undistort
-# dst = cv2.undistort(img, matrix, distortion, None, newcameramtx)
+# undistort
+dst = cv2.undistort(img, matrix, distortion, None, newcameramtx)
 # # crop the image
 # # x, y, w, h = roi
 # # dst = dst[y:y+h, x:x+w]
-# cv2.imwrite('calibresult.png', dst)
+cv2.imwrite('calibresult.png', dst)

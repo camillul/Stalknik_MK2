@@ -25,7 +25,7 @@ def stream_camera(robot: cozmo.robot.Robot):
 
     #out = cv2.VideoWriter('outpy2.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 30, (320,240))
 
-    for i in range(33) :
+    for i in range(150) :
         latest_image = robot.world.latest_image #Save latest image send by the camera
 
         if latest_image is not None:
@@ -42,8 +42,9 @@ def stream_camera(robot: cozmo.robot.Robot):
             #ocvim = cv2.cvtColor(open_cv_image, cv2.COLOR_RGB2BGR) #For colored images
             #out.write(open_cv_image)
             cv2.imshow('frame',open_cv_image) # Image Display
-            if i >= 29:
+            if i==100:
                 cv2.imwrite("Calibration {0}.jpg".format(i),open_cv_image)
+                print("saved")
 
         
         if cv2.waitKey(33) == 27:

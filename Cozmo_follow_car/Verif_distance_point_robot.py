@@ -37,11 +37,17 @@ T_rc = T_rc @ ([[0, 0, 1, 0],
                 [0, -1, 0, 0],
                 [0, 0, 0, 1]])
 
+print(T_rc)
 
 # Matrix of the Cozmo camera (pinhole model) given by "Calibration_Camera.py"
-MatrixCamera = np.array([[293.34562141,   0.,         167.74886443],
-                            [  0.,         292.63154389, 107.3285527 ],
-                            [  0.,           0.,           1.        ]])
+# MatrixCamera = np.array([[293.34562141,   0.,         167.74886443],
+#                             [  0.,         292.63154389, 107.3285527 ],
+#                             [  0.,           0.,           1.        ]])
+
+MatrixCamera = np.array([[291.41193986,   0.,        170.58829057],
+                        [  0.,         291.0430028, 108.7210315 ],
+                        [  0.,           0.,           1.        ]])
+                            
 
 # fx and fy are the focal lengths expressed in pixel units
 fx = MatrixCamera[0][0]
@@ -58,25 +64,26 @@ cy = MatrixCamera[1][2]
 # With z=1, then x' = x, y'=y 
 
 #Distance du point par rapport au repère du robot
-u=170
-v=163 #10cm
+u=171
+# v=163 #10cm
 # v=115.5 #15cm
-#v=93  #20cm
+v=93  #20cm
+
 
 # (u,v) are the coordinates of the projection point in pixels
 x = (u - cx)/fx
 y = (v - cy)/fy
 
-print(x,y)
+# print(x,y)
 
 C_r = T_rc @ np.array ([0,0,0,1])
 P_r = T_rc @ np.array ([x,y,1,1])
 
 gamma = -C_r[2]/(P_r[2]-C_r[2])
 
-print(C_r)
-print(P_r)
-print(gamma)
+# print(C_r)
+# print(P_r)
+# print(gamma)
 
 xp = C_r[0] + gamma * (P_r[0] - C_r[0])
 yp = C_r[1] + gamma * (P_r[1] - C_r[1])
