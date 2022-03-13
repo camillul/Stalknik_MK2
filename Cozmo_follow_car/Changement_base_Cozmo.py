@@ -1,5 +1,4 @@
 import numpy as np
-from torch import rad2deg
 
 def translation(vector):
     return np.array([[1, 0, 0, vector[0]],

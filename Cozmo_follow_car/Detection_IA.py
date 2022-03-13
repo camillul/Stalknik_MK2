@@ -1,5 +1,4 @@
 import cozmo
-import time
 import cv2
 import numpy as np
 import torch
@@ -58,7 +57,6 @@ def stream_camera(robot: cozmo.robot.Robot):
     rot_speed = 0
     l_rot_wheel = 0
     r_rot_wheel = 0
-    detection = "start"
     signe = False
 
     while True:
@@ -128,7 +126,7 @@ def stream_camera(robot: cozmo.robot.Robot):
             
             if (signe ^ signe_old) == True and rot_speed_old != 0: 
                 rot_speed = 0
-                print('change')
+                print('change rotational direction')
 
             # Combination of rotational and linear speed to send a command to Cozmo wheels.
             r_rot_wheel = line_speed+K*rot_speed
