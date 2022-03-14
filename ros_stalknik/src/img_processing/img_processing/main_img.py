@@ -3,72 +3,116 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
 import cv2
+# from cv_bridge import CvBridge
 import numpy as np
+import time
+from rclpy.qos import qos_profile_sensor_data
+
+
+
+def cv2_to_imgmsg(cv_image, encode ="mono8"):
+    """
+    mono8: CV_8UC1, grayscale image
+
+    mono16: CV_16UC1, 16-bit grayscale image
+
+    bgr8: CV_8UC3, color image with blue-green-red color order
+
+    rgb8: CV_8UC3, color image with red-green-blue color order
+
+    bgra8: CV_8UC4, BGR color image with an alpha channel
+
+    rgba8: CV_8UC4, RGB color image with an alpha channel
+    """
+
+    img_msg = Image()
+    img_msg.height = cv_image.shape[0]
+    img_msg.width = cv_image.shape[1]
+    img_msg.encoding = encode
+    img_msg.is_bigendian = 0
+    img_msg.data = cv_image.tostring()
+    img_msg.step = len(img_msg.data) // img_msg.height # That double line is actually integer division, not a comment
+    return img_msg
+
 
 class ImgNode(Node):
     def __init__(self):
         super().__init__('img_node')
-        self.imagePub = self.create_publisher(Image, 'image', 10)
-        timer_period = 0.5  # seconds
-        self.timer = self.create_timer(timer_period, self.img_callback)
-
-        self.im_list = []
-
-        
-
-        # self.declare_parameters(
-        #     namespace='Stalknik',
-        #     parameters=[
-        #         ('IsTest',None)
-        #         ('my_video_file',None),
-        #     ])
-
 
         self.declare_parameter('/Stalknik/IsTest',False)
         self.IsTest = self.get_parameter('/Stalknik/IsTest').get_parameter_value()
 
-        self.declare_parameter('/Stalknik/my_video_file','error')
-        self.my_video_file = self.get_parameter('/Stalknik/my_video_file').get_parameter_value().string_value
+        self.declare_parameter('/Stalknik/my_video_file',"file:///Users/rikic/Documents/Projet/Stalknik_MK2/PFE_video/outpy2.avi")
 
+        self.my_video_file = self.get_parameter('/Stalknik/my_video_file').get_parameter_value().string_value
+        self.i= 0
+
+        self.image_pub = self.create_publisher(Image, 'image', qos_profile_sensor_data )
+
+        if self.IsTest:
+            self.get_logger().info('TEST Video')
+            self.cap = cv2.VideoCapture(self.my_video_file)
+            self.img_callback()
+        else :
+            timer_period = 0.1
+            self.timer = self.create_timer(timer_period, self.img_callback)
         
-        self.i = 0
+
 
 
     def img_callback(self):
 
-        if self.IsTest:
-            self.get_logger().info('TEST Video')
-            cap = cv2.VideoCapture(self.my_video_file) 
 
-            while(cap.isOpened()): 
-                ret, frame = cap.read() 
+        if self.IsTest:
+            while(self.cap.isOpened()): 
+                ret, frame = self.cap.read() 
                 if ret == True: 
-                    cv2.imshow('Frame', frame) 
-                    msg = Image()
-                    msg.header.stamp = Node.get_clock(self).now().to_msg()
-                    msg.header.frame_id = 'TestVideo'
-                    msg.height = np.shape(frame)[0]
-                    msg.width = np.shape(frame)[1]
-                    msg.encoding = "bgr8"
-                    msg.is_bigendian = False
-                    msg.step = np.shape(frame)[2] * np.shape(frame)[1]
-                    msg.data = np.array(frame).tobytes()
+                    cv2.imshow('from_img_acquisition', frame) 
+                    
+                    # msg = Image()
+                    # msg.header.stamp = Node.get_clock(self).now().to_msg()
+                    # msg.header.frame_id = 'TestVideo'
+                    # msg.height = np.shape(frame)[0]
+                    # msg.width = np.shape(frame)[1]
+                    # msg.encoding = "bgr8"
+                    # msg.is_bigendian = False
+                    # msg.step = np.shape(frame)[2] * np.shape(frame)[1]
+                    # msg.data = np.array(frame).tobytes()
 
                     # publishes message
-                    self.imagePub.publish(msg)
+
+
+
+
+                    # msg = self.br.cv2_to_imgmsg(frame)
+                    
+                    self.image_pub.publish(cv2_to_imgmsg(frame))
+                    # self.test = self.br.imgmsg_to_cv2(self.br.cv2_to_imgmsg(frame), "bgr8")
+
+              
+                    # self.image_pub.publish(msg)
+                    
                     self.get_logger().info('%d Images Published' % self.i)
                     self.i += 1
 
 
-                    if cv2.waitKey(25) & 0xFF == ord('q'): 
-                        break
-                
-                
+                    if cv2.waitKey(25) & 0xFF == ord('q'):
+                        self.cap.release() 
+                        cv2.destroyAllWindows() 
+                        pass
+                    
+                    
                 else:  
-                    break
-                
-                cap.release() 
-            # self.imagePub.publish(self.bridge.cv2_to_imgmsg(np.array(self.cv_image), "bgr8"))
+                    self.cap.release() 
+                    cv2.destroyAllWindows()                
+                    pass
+            else:  
+                self.cap.release() 
+                cv2.destroyAllWindows()                
+                pass
+            
+
+            # self.image_pub.publish(self.bridge.cv2_to_imgmsg(np.array(self.cv_image), "bgr8"))
             # self.get_logger().info('Publishing an image')
             # frame = self.cv_image
             # processes image data and converts to ros 2 message
