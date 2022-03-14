@@ -5,23 +5,19 @@ import os
 import glob
  
  
-# Define the dimensions of checkerboard
+# Define the dimensions of checkerboard used for calibration
 CHECKERBOARD = (6, 9)
  
- 
-# stop the iteration when specified
-# accuracy, epsilon, is reached or
+# stop the iteration when specified accuracy, epsilon, is reached or
 # specified number of iterations are completed.
 criteria = (cv2.TERM_CRITERIA_EPS +
             cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
- 
  
 # Vector for 3D points
 threedpoints = []
  
 # Vector for 2D points
 twodpoints = []
- 
  
 #  3D points real world coordinates
 objectp3d = np.zeros((1, CHECKERBOARD[0]
@@ -32,18 +28,15 @@ objectp3d[0, :, :2] = np.mgrid[0:CHECKERBOARD[0],
 prev_img_shape = None
  
  
-# Extracting path of individual image stored
-# in a given directory. Since no path is
-# specified, it will take current directory
-# jpg files alone
+# Extracting path of individual image stored in a given directory. Since no path is
+# specified, it will take current directory jpg files alone
 images = glob.glob('./images_calibration/*.jpg')
  
 for filename in images:
     image = cv2.imread(filename)
     grayColor = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
  
-    # Find the chess board corners
-    # If desired number of corners are
+    # Find the chess board corners. If desired number of corners are
     # found in the image then ret = true
     ret, corners = cv2.findChessboardCorners(
                     grayColor, CHECKERBOARD,
@@ -51,14 +44,12 @@ for filename in images:
                     + cv2.CALIB_CB_FAST_CHECK +
                     cv2.CALIB_CB_NORMALIZE_IMAGE)
  
-    # If desired number of corners can be detected then,
-    # refine the pixel coordinates and display
+    # If desired number of corners can be detected then, refine the pixel coordinates and display
     # them on the images of checker board
     if ret == True:
         threedpoints.append(objectp3d)
  
-        # Refining pixel coordinates
-        # for given 2d points.
+        # Refining pixel coordinates for given 2d points.
         corners2 = cv2.cornerSubPix(
             grayColor, corners, (11, 11), (-1, -1), criteria)
  
@@ -77,10 +68,8 @@ cv2.destroyAllWindows()
 h, w = image.shape[:2]
  
  
-# Perform camera calibration by
-# passing the value of above found out 3D points (threedpoints)
-# and its corresponding pixel coordinates of the
-# detected corners (twodpoints)
+# Perform camera calibration by passing the value of above found out 3D points (threedpoints)
+# and its corresponding pixel coordinates of the detected corners (twodpoints)
 ret, matrix, distortion, r_vecs, t_vecs = cv2.calibrateCamera(
     threedpoints, twodpoints, grayColor.shape[::-1], None, None)
  
@@ -97,16 +86,3 @@ print(r_vecs)
  
 print("\n Translation Vectors:")
 print(t_vecs)
-
-#Distortion
-
-# img = cv2.imread('Calibration 29.jpg')
-# h,  w = img.shape[:2]
-# newcameramtx, roi = cv2.getOptimalNewCameraMatrix(matrix, distortion, (w,h), 1, (w,h))
-
-# # undistort
-# dst = cv2.undistort(img, matrix, distortion, None, newcameramtx)
-# # crop the image
-# # x, y, w, h = roi
-# # dst = dst[y:y+h, x:x+w]
-# cv2.imwrite('calibresult.png', dst)
