@@ -85,6 +85,12 @@ class SimulationNode(Node):
 
         # my_dae_file = self.declare_parameter('my_dae_file').get_parameter_value().string_value
         # my_dae_file = self.declare_parameter('my_dae_file').get_parameter_value()
+
+        self.declare_parameter('/Stalknik/actuator_control',False)
+        self.actuator_control = self.get_parameter('/Stalknik/actuator_control').get_parameter_value()
+        self.actuator_control = False
+        
+
         self.declare_parameter('/Stalknik/my_dae_file','error')
         self.my_dae_file = self.get_parameter('/Stalknik/my_dae_file').get_parameter_value().string_value
         self.get_logger().info('dae param : "%s"' % self.my_dae_file)
@@ -124,7 +130,20 @@ class SimulationNode(Node):
 
 
 
-        # TODO::Ricky:01:03:2022: Draw/Comment a scheme for motor
+
+        #                U2
+        #                X
+        #                |
+        #                |
+        #                |
+        #U3   X--------<_._>--------X U1
+        #                |
+        #                |
+        #                |
+        #                X
+        #               U4
+        # ------------------------------------------------
+
 
         self.u1 = float(0) 
         self.u2 = float(0) 
@@ -149,32 +168,45 @@ class SimulationNode(Node):
         # Inertial matrix
         self.I=np.array([[10,0,0],[0,10,0],[0,0,20]])
         self.g = -9.81
-   
 
         self.simulation_pub = self.create_publisher(Marker, 'drone_position', 10)
         # self.mapPub = self.create_publisher(Marker, 'map', 10)
 
-        self.actuator_sub = self.create_subscription(
-            Motor,
-            'motor_mvmt',
-            self.actuator_callback,
-            10)
+        if self.actuator_control:
+            self.actuator_sub = self.create_subscription(
+                Motor,
+                'motor_mvmt',
+                self.actuator_callback,
+                10)
 
-        self.actuator_sub  # prevent unused variable warning
-        # time step
+            self.actuator_sub  # prevent unused variable warning
+            
+        else :  
+            self.drone_command_sub = self.create_subscription(
+                Pose,
+                'drone_command',
+                self.drone_command_callback,
+                10)
+
+            self.drone_command_sub  # prevent unused variable warning   
+            self.drone_command_vec = np.array([0,0,0],np.float).flatten()
+
+        
         
 
         # self.tfPub = self.create_publisher(msg_type=TFMessage, topic="/tf", qos_profile = 10)
         # self.tf_static_Pub = self.create_publisher(msg_type=TFMessage, topic="/tf_static", qos_profile = 10)
         self._tf_publisher_static = StaticTransformBroadcaster(self)
         self._tf_publisher = TransformBroadcaster(self)
+        # self.make_transforms_static()
         self.make_transforms()
 
 
 
-
         self.timer = self.create_timer(1, self.simulation_callback)
+        
         self.timer2 = self.create_timer(self.dt, self.dynamic)
+
         self.timer3 = self.create_timer(self.dt, self.make_transforms)
 
     def simulation_callback(self):
@@ -198,7 +230,7 @@ class SimulationNode(Node):
         msg.pose.position.x = float(self.x)
         msg.pose.position.y = float(self.y)
         msg.pose.position.z = float(self.z)
-        quaternion_drone = quaternion_from_euler(self.thetax,self.thetay,self.thetaz)
+        quaternion_drone = quaternion_from_euler(self.thetax,self.thetay,self.thetaz+np.pi)
         msg.pose.orientation.x = quaternion_drone[0]
         msg.pose.orientation.y = quaternion_drone[1]
         msg.pose.orientation.z = quaternion_drone[2]
@@ -218,7 +250,7 @@ class SimulationNode(Node):
 
         transform_map_msg = TransformStamped()
         transform_map_msg.header.stamp = self.get_clock().now().to_msg()
-        transform_drone_msg.header.frame_id = "map"
+        transform_map_msg.header.frame_id = "map"
         transform_map_msg.transform.translation.x = float(0)
         transform_map_msg.transform.translation.y = float(0)
         transform_map_msg.transform.translation.z = float(0)
@@ -248,7 +280,7 @@ class SimulationNode(Node):
         transform_drone_msg.transform.translation.x = float(self.x)
         transform_drone_msg.transform.translation.y = float(self.y)
         transform_drone_msg.transform.translation.z = float(self.z)
-        quaternion_drone = quaternion_from_euler(self.thetax,self.thetay,self.thetaz)
+        quaternion_drone = quaternion_from_euler(self.thetaz,self.thetay,self.thetax)
         transform_drone_msg.transform.rotation.x = quaternion_drone[0]
         transform_drone_msg.transform.rotation.y = quaternion_drone[1]
         transform_drone_msg.transform.rotation.z = quaternion_drone[2]
@@ -264,64 +296,78 @@ class SimulationNode(Node):
         self.u4 = msg.m4
         self.get_logger().info('I heard actuator command: ("%d","%d","%d","%d") ' %(msg.m1 ,msg.m2 ,msg.m3 ,msg.m4))
 
+    def drone_command_callback(self,msg):
+        self.get_logger().info('callback from sim')
+        self.get_logger().info('I heard control command: ("%d","%d","%d") ' %(msg.position.x ,msg.position.y ,msg.position.z))
+        self.drone_command_vec[0] = msg.position.x 
+        self.drone_command_vec[1] = msg.position.y 
+        self.drone_command_vec[2] = msg.position.z        
 
 
 
     def dynamic(self):
-        self.state = np.array([[self.x,self.y,self.z, self.thetax, self.thetay, self.thetaz,self.x_dot,self.y_dot,self.z_dot, self.thetax_dot, self.thetay_dot, self.thetaz_dot]]).flatten()
-        # FIXME:Ricky:26/02/2022: command must be adjust with * (-100) is it normal ? so if cmd is positive then z rise.
-        w = -np.array([self.u1,self.u2,self.u3,self.u4])/100
-        self.thetax,self.thetay,self.thetaz
-        vr=(self.state[6:9]).reshape(3,1)
-        wr=(self.state[9:12]).reshape(3,1)
-        w2=w*abs(w)
-        # torque is the torque felt by the entire system (!= motor torque), that's why we use w² 
-        # v =  Eulermat * vdrone
-        # a = v_dot = Eulermat_dot* vdrone + Eulermat*adrone
-        torque=self.B@w2.flatten()
-        E=eulermat(self.thetax,self.thetay,self.thetaz)
-        dp=E@vr
-        # la matrice adjointe est nécéssaire pour la formule axe-angle et en avoir une matrice de rotation (provient d'un produit vectoriel)
-        dvr=-adjoint(wr)@vr+inv(E)@np.array([[0],[0],[self.g]])+np.array([[0],[0],[-torque[0]/self.m]])  
-        dtheta= eulerderivative(self.thetax,self.thetay,self.thetaz) @ wr 
-         
-        dwr= inv(self.I)@(-adjoint(wr)@self.I@wr+torque[1:4].reshape(3,1)) 
 
-        dstate = np.vstack((dp,dtheta,dvr,dwr)).flatten()
-        self.state = self.state + self.dt*dstate
+        if self.actuator_control:
+            self.get_logger().info('Actuator dynamics')
+            self.state = np.array([[self.x,self.y,self.z, self.thetax, self.thetay, self.thetaz,self.x_dot,self.y_dot,self.z_dot, self.thetax_dot, self.thetay_dot, self.thetaz_dot]]).flatten()
+            # FIXME:Ricky:26/02/2022: command must be adjust with * (-100) is it normal ? so if cmd is positive then z rise.
+            w = -np.array([self.u1,self.u2,self.u3,self.u4])/100
+            self.thetax,self.thetay,self.thetaz
+            vr=(self.state[6:9]).reshape(3,1)
+            wr=(self.state[9:12]).reshape(3,1)
+            w2=w*abs(w)
+            # torque is the torque felt by the entire system (!= motor torque), that's why we use w² 
+            # v =  Eulermat * vdrone
+            # a = v_dot = Eulermat_dot* vdrone + Eulermat*adrone
+            torque=self.B@w2.flatten()
+            E=eulermat(self.thetax,self.thetay,self.thetaz)
+            dp=E@vr
+            # la matrice adjointe est nécéssaire pour la formule axe-angle et en avoir une matrice de rotation (provient d'un produit vectoriel)
+            dvr=-adjoint(wr)@vr+inv(E)@np.array([[0],[0],[self.g]])+np.array([[0],[0],[-torque[0]/self.m]])  
+            dtheta= eulerderivative(self.thetax,self.thetay,self.thetaz) @ wr 
+            
+            dwr= inv(self.I)@(-adjoint(wr)@self.I@wr+torque[1:4].reshape(3,1)) 
 
-        self.state[6]= min(max(-self.speedLimit ,self.state[6]),self.speedLimit)
-        self.state[7]= min(max(-self.speedLimit ,self.state[7]),self.speedLimit)  
-        self.state[8]= min(max(-self.speedLimit ,self.state[8]),self.speedLimit)
-        self.state[9] = min(max(-self.rotLimit ,self.state[9]),self.rotLimit)
-        self.state[10] = min(max(-self.rotLimit ,self.state[10]),self.rotLimit)
-        self.state[11] = min(max(-self.rotLimit ,self.state[11]),self.rotLimit)
-        # z can't be negative because else it would mean the drone is under the ground
-        # though the real limite is not 0 i depend on ground altitude
-        if (self.state[2] < 0 ):
-            self.state[2]= 0
-            self.state[8] = 0       
+            dstate = np.vstack((dp,dtheta,dvr,dwr)).flatten()
+            self.state = self.state + self.dt*dstate
 
-        self.get_logger().info('dstate : "%s"' %dstate)
-        self.get_logger().info('state : "%s"' %self.state)
-        self.get_logger().info('result : "%s"' %self.state)
+            self.state[6]= min(max(-self.speedLimit ,self.state[6]),self.speedLimit)
+            self.state[7]= min(max(-self.speedLimit ,self.state[7]),self.speedLimit)  
+            self.state[8]= min(max(-self.speedLimit ,self.state[8]),self.speedLimit)
+            self.state[9] = min(max(-self.rotLimit ,self.state[9]),self.rotLimit)
+            self.state[10] = min(max(-self.rotLimit ,self.state[10]),self.rotLimit)
+            self.state[11] = min(max(-self.rotLimit ,self.state[11]),self.rotLimit)
+            # z can't be negative because else it would mean the drone is under the ground
+            # though the real limite is not 0 i depend on ground altitude
+            if (self.state[2] < 0 ):
+                self.state[2]= 0
+                self.state[8] = 0       
 
-        self.x= self.state[0]
-        self.y= self.state[1]
-        self.z= self.state[2]
-        
-        self.thetax = self.state[3] 
-        self.thetay = self.state[4]
-        self.thetaz = self.state[5]
+            self.get_logger().info('dstate : "%s"' %dstate)
+            self.get_logger().info('state : "%s"' %self.state)
+            self.get_logger().info('result : "%s"' %self.state)
 
-        self.x_dot = self.state[6]
-        self.y_dot = self.state[7]
-        self.z_dot = self.state[8]
+            self.x= self.state[0]
+            self.y= self.state[1]
+            self.z= self.state[2]
+            
+            self.thetax = self.state[3] 
+            self.thetay = self.state[4]
+            self.thetaz = self.state[5]
 
-        self.thetax_dot = self.state[9] 
-        self.thetay_dot = self.state[10]
-        self.thetaz_dot = self.state[11]        
-        # Physical limits implie acc and speed have a maximum (otherwise we would have an infinite energy sometime)
+            self.x_dot = self.state[6]
+            self.y_dot = self.state[7]
+            self.z_dot = self.state[8]
+
+            self.thetax_dot = self.state[9] 
+            self.thetay_dot = self.state[10]
+            self.thetaz_dot = self.state[11]        
+            # Physical limits implie acc and speed have a maximum (otherwise we would have an infinite energy sometime)
+        else :
+            # self.get_logger().info('FULL SIM')
+            self.x= self.drone_command_vec[0]
+            self.y= self.drone_command_vec[1]
+            self.z= self.drone_command_vec[2]
 
 
 

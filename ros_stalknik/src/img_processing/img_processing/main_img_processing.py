@@ -53,8 +53,28 @@ class ImgProcessNode(Node):
       self.finish_process = False
       
 
-      self.car_pos_vec =  np.array([0,0,0])
-      self.drone_pos_vec = np.array([0,0,0])
+      self.car_pos_vec =  np.array([0,0,0],np.float)
+      self.drone_pos_vec = np.array([0,0,0],np.float)
+
+      self.T_robot_camera = np.array([[ 0.,         -0.25881905,  0.96592583, 22.87403861],
+                                 [-1.,          0.,          0.,          0.        ],
+                                 [ 0.,         -0.96592583, -0.25881905, 37.05384295],
+                                 [ 0.,          0.,          0.,          1.        ]])
+
+      # Matrix of the Cozmo camera (pinhole model) given by "Calibration_Camera.py"
+      self.MatrixCamera = np.array([[291.41193986,   0.,        170.58829057],
+                              [  0.,         291.0430028, 108.7210315 ],
+                              [  0.,           0.,           1.        ]])
+
+      # fx and fy are the focal lengths expressed in pixel units
+      self.fx = self.MatrixCamera[0][0]
+      self.fy = self.MatrixCamera[1][1]
+
+      # (cx,cy) is the image center
+      self.cx = self.MatrixCamera[0][2]
+      self.cy = self.MatrixCamera[1][2]
+
+
 
       self.vertical_angle_of_view = 41.4* np.pi /180
       self.horizontal_angle_of_view = 53.5* np.pi /180
@@ -84,7 +104,7 @@ class ImgProcessNode(Node):
       # may need to use at least once : force_reload = True
       self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=self.my_trained_model)
       
-      timer_period = 1  # seconds
+      timer_period = 2  # seconds
       self.timer = self.create_timer(timer_period, self.img_process_callback)
       
 
@@ -127,7 +147,18 @@ class ImgProcessNode(Node):
 
       self.car_pos_vec = self.drone_pos_vec + distance_vec
 
-      
+   def update_car_pos(self,xc,yc):
+      """
+      update car position with directly xc,yc which are position along respectively x, y robot axis reference
+      """
+      print('from update')
+      print(float(xc) *float(0.010))
+      print(float(yc) *float(0.010))
+      print(self.car_pos_vec[0])
+      print(self.car_pos_vec[1])
+      self.car_pos_vec[0] = (float(xc) *float(0.0010)) 
+      self.car_pos_vec[1] = (float(yc) *float(0.0010))
+      self.car_pos_vec[2] = 0
 
    def img_process_callback(self):
       
@@ -148,10 +179,15 @@ class ImgProcessNode(Node):
 
          # self.latest_processed_image = self.new_image_to_process
          msg = Pose()
-         vec = self.car_pos_vec.flatten()
-         msg.position.x = float(vec[0])
-         msg.position.y = float(vec[1])
-         msg.position.z = float(vec[2])
+         # vec = self.car_pos_vec.flatten()
+         print("from publisher")
+         print(self.car_pos_vec[0])
+         print(float(self.car_pos_vec[0]))
+         print(self.car_pos_vec[1])
+         print(float(self.car_pos_vec[1]))
+         msg.position.x = float(self.car_pos_vec[0])
+         msg.position.y = float(self.car_pos_vec[1])
+         msg.position.z = float(self.car_pos_vec[2])
 
          # TODO:Ricky:04/03/2022: Implement rotation detection
 
@@ -202,30 +238,60 @@ class ImgProcessNode(Node):
       
    def custom_car_detection(self,img):
 
+
+
+      x1 = 0
+      y1 = 0
+      x2 = 320
+      y2 = 240
+      signe = False
+
       self.get_logger().info('Custom detection if')
       if self.new_image_to_process is not None:
          self.get_logger().info('Custom detection begin')
          #OPENCV IMAGE SHOW
          im = self.new_image_to_process
          open_cv_image = im
+         # Detection by inference to find the car in the image with pretrained AI Model loaded before
+         detection = self.model(open_cv_image, size=320)
 
-         detection = self.model(open_cv_image, size=320)  # includes NMS
-         self.get_logger().info('Custom detection detection')
-         results_numpy = detection.pred[0].cpu().detach().numpy()
+         # Result of the Detection
+         results_np = detection.pred[0].cpu().detach().numpy()
          
-         for result in results_numpy:
-            xa, ya, xb, yb, conf, cls = result
-            if conf > 0.3:
-               x1, y1, x2, y2 = [round(f) for f in [xa, ya, xb, yb]]
+         # Draw a rectangle arround the car if the detection ratio is more than 30%
+         # It uses xa, ya, xb, yb which are the coordinates of the 4 corners of the box detection
+         # given by the result variable of the detection "result_np"
+         for result in results_np:
+               xa, ya, xb, yb, conf, cls = result
+               if conf > 0.3:
+                  x1, y1, x2, y2 = [round(f) for f in [xa, ya, xb, yb]]
 
-            cv2.rectangle(open_cv_image,(x1,y1),(x2,y2),(0,255,255),2)
-            cv2.putText(open_cv_image,'%f' % conf,(x1, y1),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,255),1)
-      
-         self.get_logger().info('Custom detection almost Done')
-         w = x2-x1
-         h = y2-y1
+               cv2.rectangle(open_cv_image,(x1,y1),(x2,y2),(0,255,255),2)
 
-         self.from_xy_to_car_pos(w,h) 
+         # Car bottom middle point in the image in pixels
+         Car_BM_point_u = x1+(x2-x1)/2
+         Car_BM_point_v = y2
+
+         # (x,y) are the coordinates of the projection point in pixels
+         x = (Car_BM_point_u - self.cx)/self.fx
+         y = (Car_BM_point_v - self.cy)/self.fy
+
+         # Calculation of the coordinates of the point of intersection between the plane of the ground 
+         # and the vector corresponding to the selected point of the image, along the optical axis
+         C_r = self.T_robot_camera @ np.array ([0,0,0,1])
+         P_r = self.T_robot_camera @ np.array ([x,y,1,1])
+
+         gamma = -C_r[2]/(P_r[2]-C_r[2])
+
+         # (xp,yp) are the coordinates of the Car bottom middle point in the robot landmark
+         xp = C_r[0] + gamma * (P_r[0] - C_r[0])
+         yp = C_r[1] + gamma * (P_r[1] - C_r[1])
+
+         self.update_car_pos(xp,yp)
+         # Width and Height of the detection rectangle
+         # w = x2-x1
+         # h = y2-y1
+         # self.from_xy_to_car_pos(w,h) 
 
          self.img_result = open_cv_image
          self.get_logger().info('Custom detection Done')

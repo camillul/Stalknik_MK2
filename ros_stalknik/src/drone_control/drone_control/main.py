@@ -51,14 +51,14 @@ class ControlNode(Node):
         self.timer = self.create_timer(self.timer_period, self.drone_command_callback)
         self.i = float(0)
 
-        self.follow_choice = "behind"
+        self.follow_choice = "above"
         self.z_offset = 1.5
         self.distance_follow = 2
 
-        self.car_pos = np.array([0,0,0])
-        self.car_orientation = np.array([0,0,0])
-        self.drone_pos = np.array([0,0,0])
-        self.drone_orientation = np.array([0,0,0])
+        self.car_pos = np.array([0,0,0],np.float)
+        self.car_orientation = np.array([0,0,0],np.float)
+        self.drone_pos = np.array([0,0,0],np.float)
+        self.drone_orientation = np.array([0,0,0],np.float)
 
     def follow_up_callback(self, request, response):
         if request.mode == 1 :
@@ -100,6 +100,10 @@ class ControlNode(Node):
                 self.drone_command =  self.drone_pos
 
             msg = Pose()
+
+            print("from node control")
+            print(float(self.drone_pos[0]))
+            print(float(self.drone_pos[1]))
 
             msg.position.x = float(self.drone_pos[0])
             msg.position.y = float(self.drone_pos[1])

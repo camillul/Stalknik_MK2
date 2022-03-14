@@ -2,3 +2,4 @@
   node_simulation:
     ros__parameters:
       my_dae_file: 'file:///Users/rikic/Documents/Projet/Stalknik_MK2/ros_stalknik/src/simulation/resource/drone.dae'
+      actuator_control: True
