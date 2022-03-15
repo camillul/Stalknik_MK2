@@ -31,7 +31,7 @@ class ImgProcessNode(Node):
       # Here we declare our parameters from YAML file
       self.declare_parameter('/Stalknik/my_yolo_file','error')
       self.my_yolo_file = self.get_parameter('/Stalknik/my_yolo_file').get_parameter_value().string_value
-      self.declare_parameter('/Stalknik/my_trained_model','C:/Users/rikic/Documents/Projet/Stalknik_MK2/Cozmo_follow_car/trained_carmodel/car_cozmo.pt')
+      self.declare_parameter('/Stalknik/my_trained_model','error')
       self.my_trained_model = self.get_parameter('/Stalknik/my_trained_model').get_parameter_value().string_value
       self.declare_parameter('/Stalknik/IsCustom',True)
       self.IsCustom = self.get_parameter('/Stalknik/IsCustom').get_parameter_value()
