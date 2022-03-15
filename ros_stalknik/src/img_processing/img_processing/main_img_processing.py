@@ -27,25 +27,24 @@ class ImgProcessNode(Node):
    def __init__(self):
       super().__init__('img_process_node')
 
+
+      # Here we declare our parameters from YAML file
       self.declare_parameter('/Stalknik/my_yolo_file','error')
       self.my_yolo_file = self.get_parameter('/Stalknik/my_yolo_file').get_parameter_value().string_value
-
       self.declare_parameter('/Stalknik/my_trained_model','C:/Users/rikic/Documents/Projet/Stalknik_MK2/Cozmo_follow_car/trained_carmodel/car_cozmo.pt')
       self.my_trained_model = self.get_parameter('/Stalknik/my_trained_model').get_parameter_value().string_value
-
       self.declare_parameter('/Stalknik/IsCustom',True)
       self.IsCustom = self.get_parameter('/Stalknik/IsCustom').get_parameter_value()
 
+        # ****_sub and ****_pub are initialization for publisher and subscriber 
+        # args : message type, "topic name", quality of service)
       self.car_position_pub = self.create_publisher(Pose, 'car_position', 10)
-
-
- 
-
       self.image_sub = self.create_subscription(
             Image,
             'image',
             self.img_callback, qos_profile_sensor_data  )
       self.image_sub  # prevent unused variable warning
+
 
       self.img_result = None
       self.latest_processed_image = None
@@ -151,17 +150,17 @@ class ImgProcessNode(Node):
       """
       update car position with directly xc,yc which are position along respectively x, y robot axis reference
       """
-      print('from update')
-      print(float(xc) *float(0.010))
-      print(float(yc) *float(0.010))
-      print(self.car_pos_vec[0])
-      print(self.car_pos_vec[1])
-      self.car_pos_vec[0] = (float(xc) *float(0.0010)) 
+
+      self.car_pos_vec[0] = (float(xc) *float(0.0010))  #float(0.0010)allow to change from mm to m
       self.car_pos_vec[1] = (float(yc) *float(0.0010))
       self.car_pos_vec[2] = 0
 
    def img_process_callback(self):
-      
+      """
+        This function is callback and raise at some event
+        It will publish the car position from image processing
+
+      """
       self.get_logger().info('img_callback')
       self.finish_process = False
       if self.IsCustom :
@@ -171,28 +170,20 @@ class ImgProcessNode(Node):
 
       else :
          self.car_detection(self.new_image_to_process)
-         # while(not self.finish_process):
-         #    pass
 
-      
+      # self.finish_process ensure that the image processing have been done
       if (self.finish_process == True) : 
 
-         # self.latest_processed_image = self.new_image_to_process
-         msg = Pose()
-         # vec = self.car_pos_vec.flatten()
-         print("from publisher")
-         print(self.car_pos_vec[0])
-         print(float(self.car_pos_vec[0]))
-         print(self.car_pos_vec[1])
-         print(float(self.car_pos_vec[1]))
-         msg.position.x = float(self.car_pos_vec[0])
-         msg.position.y = float(self.car_pos_vec[1])
-         msg.position.z = float(self.car_pos_vec[2])
+
+         car_pose_msg = Pose()
+         car_pose_msg.position.x = float(self.car_pos_vec[0])
+         car_pose_msg.position.y = float(self.car_pos_vec[1])
+         car_pose_msg.position.z = float(self.car_pos_vec[2])
 
          # TODO:Ricky:04/03/2022: Implement rotation detection
 
-         self.car_position_pub.publish(msg)
-         self.get_logger().info('Publishing : "%s"' % msg.position)
+         self.car_position_pub.publish(car_pose_msg)
+         self.get_logger().info('Publishing : "%s"' % car_pose_msg.position)
 
          cv2.imshow('img_processing', self.img_result)
 
@@ -209,9 +200,7 @@ class ImgProcessNode(Node):
 
    def img_callback(self,msg):
 
-      self.get_logger().info("sub callback")
-      
-      # self.new_image_to_process = self.imgmsg_to_cv2(msg)
+
       try:
          self.new_image_to_process = self.imgmsg_to_cv2(msg)
          # self.new_image_to_process = np.array(self.frame, dtype=np.uint8)
@@ -223,8 +212,6 @@ class ImgProcessNode(Node):
          pass
 
 
-      # Convert the image to a Numpy array since most cv2 functions
-      # require Numpy arrays.
       
 
    def car_detection(self,img):
@@ -237,8 +224,6 @@ class ImgProcessNode(Node):
       self.finish_process = True
       
    def custom_car_detection(self,img):
-
-
 
       x1 = 0
       y1 = 0
