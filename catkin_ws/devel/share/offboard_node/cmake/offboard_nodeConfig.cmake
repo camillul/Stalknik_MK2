@@ -1,0 +1,1 @@
+/home/nicolas/catkin_ws/devel/.private/offboard_node/share/offboard_node/cmake/offboard_nodeConfig.cmake

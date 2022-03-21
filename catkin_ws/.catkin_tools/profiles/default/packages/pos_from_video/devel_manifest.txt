@@ -1,0 +1,6 @@
+pos_from_video
+/home/nicolas/catkin_ws/devel/.private/pos_from_video/cmake.lock /home/nicolas/catkin_ws/devel/./cmake.lock
+/home/nicolas/catkin_ws/devel/.private/pos_from_video/lib/pos_from_video/pos_from_video_node /home/nicolas/catkin_ws/devel/lib/pos_from_video/pos_from_video_node
+/home/nicolas/catkin_ws/devel/.private/pos_from_video/lib/pkgconfig/pos_from_video.pc /home/nicolas/catkin_ws/devel/lib/pkgconfig/pos_from_video.pc
+/home/nicolas/catkin_ws/devel/.private/pos_from_video/share/pos_from_video/cmake/pos_from_videoConfig-version.cmake /home/nicolas/catkin_ws/devel/share/pos_from_video/cmake/pos_from_videoConfig-version.cmake
+/home/nicolas/catkin_ws/devel/.private/pos_from_video/share/pos_from_video/cmake/pos_from_videoConfig.cmake /home/nicolas/catkin_ws/devel/share/pos_from_video/cmake/pos_from_videoConfig.cmake

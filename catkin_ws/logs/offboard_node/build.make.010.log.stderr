@@ -1,0 +1,27 @@
+[01m[K/home/nicolas/catkin_ws/src/offboard_node/src/offb_node.cpp:23:16:[m[K [01;31m[Kerror: [m[K‘[01m[KOdometry[m[K’ in namespace ‘[01m[Kgeometry_msgs[m[K’ does not name a type
+   23 | geometry_msgs::[01;31m[KOdometry[m[K current_local_pose;
+      |                [01;31m[K^~~~~~~~[m[K
+[01m[K/home/nicolas/catkin_ws/src/offboard_node/src/offb_node.cpp:24:40:[m[K [01;31m[Kerror: [m[K‘[01m[KOdometry[m[K’ in namespace ‘[01m[Kgeometry_msgs[m[K’ does not name a type
+   24 | void local_pos_cb(const geometry_msgs::[01;31m[KOdometry[m[K::ConstPtr& msg){
+      |                                        [01;31m[K^~~~~~~~[m[K
+[01m[K/home/nicolas/catkin_ws/src/offboard_node/src/offb_node.cpp:24:58:[m[K [01;31m[Kerror: [m[Kexpected unqualified-id before ‘[01m[K&[m[K’ token
+   24 | void local_pos_cb(const geometry_msgs::Odometry::ConstPtr[01;31m[K&[m[K msg){
+      |                                                          [01;31m[K^[m[K
+[01m[K/home/nicolas/catkin_ws/src/offboard_node/src/offb_node.cpp:24:58:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K)[m[K’ before ‘[01m[K&[m[K’ token
+   24 | void local_pos_cb[34m[K([m[Kconst geometry_msgs::Odometry::ConstPtr[01;31m[K&[m[K msg){
+      |                  [34m[K~[m[K                                       [01;31m[K^[m[K
+      |                                                          [32m[K)[m[K
+[01m[K/home/nicolas/catkin_ws/src/offboard_node/src/offb_node.cpp:24:60:[m[K [01;31m[Kerror: [m[Kexpected initializer before ‘[01m[Kmsg[m[K’
+   24 | void local_pos_cb(const geometry_msgs::Odometry::ConstPtr& [01;31m[Kmsg[m[K){
+      |                                                            [01;31m[K^~~[m[K
+[01m[K/home/nicolas/catkin_ws/src/offboard_node/src/offb_node.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/nicolas/catkin_ws/src/offboard_node/src/offb_node.cpp:34:45:[m[K [01;31m[Kerror: [m[K‘[01m[Klocal_pos_cb[m[K’ was not declared in this scope; did you mean ‘[01m[Klocal_pos_sub[m[K’?
+   34 |         ("mavros/global_position/local",10, [01;31m[Klocal_pos_cb[m[K);
+      |                                             [01;31m[K^~~~~~~~~~~~[m[K
+      |                                             [32m[Klocal_pos_sub[m[K
+[01m[K/home/nicolas/catkin_ws/src/offboard_node/src/offb_node.cpp:105:12:[m[K [01;31m[Kerror: [m[K‘[01m[Kcurrent_local_pose[m[K’ was not declared in this scope
+  105 |         if([01;31m[Kcurrent_local_pose[m[K.pose.pose.position.z < 9)
+      |            [01;31m[K^~~~~~~~~~~~~~~~~~[m[K
+make[2]: *** [CMakeFiles/offboard_node_node.dir/build.make:63 : CMakeFiles/offboard_node_node.dir/src/offb_node.cpp.o] Erreur 1
+make[1]: *** [CMakeFiles/Makefile2:180 : CMakeFiles/offboard_node_node.dir/all] Erreur 2
+make: *** [Makefile:141 : all] Erreur 2

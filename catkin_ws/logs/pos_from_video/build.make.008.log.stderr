@@ -1,0 +1,10 @@
+[01m[K/home/nicolas/catkin_ws/src/pos_from_video/src/send_pos.cpp:[m[K In function ‘[01m[Kvoid next_pos_cb(const ConstPtr&)[m[K’:
+[01m[K/home/nicolas/catkin_ws/src/pos_from_video/src/send_pos.cpp:19:34:[m[K [01;31m[Kerror: [m[Kexpected ‘[01m[K;[m[K’ before ‘[01m[K}[m[K’ token
+   19 |     send_next_pos = next_pos.data
+      |                                  [01;31m[K^[m[K
+      |                                  [32m[K;[m[K
+   20 | [32m[K}[m[K
+      | [32m[K~[m[K                                 
+make[2]: *** [CMakeFiles/pos_from_video_node.dir/build.make:63 : CMakeFiles/pos_from_video_node.dir/src/send_pos.cpp.o] Erreur 1
+make[1]: *** [CMakeFiles/Makefile2:646 : CMakeFiles/pos_from_video_node.dir/all] Erreur 2
+make: *** [Makefile:141 : all] Erreur 2

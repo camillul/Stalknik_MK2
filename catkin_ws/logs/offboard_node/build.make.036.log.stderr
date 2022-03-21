@@ -1,0 +1,19 @@
+[01m[K/home/nicolas/catkin_ws/src/offboard_node/src/offb_node.cpp:[m[K In function ‘[01m[Kint main(int, char**)[m[K’:
+[01m[K/home/nicolas/catkin_ws/src/offboard_node/src/offb_node.cpp:124:13:[m[K [01;31m[Kerror: [m[K‘[01m[Kprint[m[K’ was not declared in this scope
+  124 |             [01;31m[Kprint[m[K("im in\n");
+      |             [01;31m[K^~~~~[m[K
+[01m[K/home/nicolas/catkin_ws/src/offboard_node/src/offb_node.cpp:124:13:[m[K [01;36m[Knote: [m[Ksuggested alternatives:
+In file included from [01m[K/opt/ros/noetic/include/ros/ros.h:40[m[K,
+                 from [01m[K/home/nicolas/catkin_ws/src/offboard_node/src/offb_node.cpp:3[m[K:
+[01m[K/opt/ros/noetic/include/ros/console.h:165:22:[m[K [01;36m[Knote: [m[K  ‘[01m[Kros::console::print[m[K’
+  165 | ROSCONSOLE_DECL void [01;36m[Kprint[m[K(FilterBase* filter, void* logger, Level level,
+      |                      [01;36m[K^~~~~[m[K
+In file included from [01m[K/opt/ros/noetic/include/ros/console.h:35[m[K,
+                 from [01m[K/opt/ros/noetic/include/ros/ros.h:40[m[K,
+                 from [01m[K/home/nicolas/catkin_ws/src/offboard_node/src/offb_node.cpp:3[m[K:
+[01m[K/opt/ros/noetic/include/ros/console_backend.h:73:30:[m[K [01;36m[Knote: [m[K  ‘[01m[Kros::console::backend::print[m[K’
+   73 | ROSCONSOLE_BACKEND_DECL void [01;36m[Kprint[m[K(void* logger_handle, ::ros::console::Level level, const char* str, const char* file, const char* function, int line);
+      |                              [01;36m[K^~~~~[m[K
+make[2]: *** [CMakeFiles/offboard_node_node.dir/build.make:63 : CMakeFiles/offboard_node_node.dir/src/offb_node.cpp.o] Erreur 1
+make[1]: *** [CMakeFiles/Makefile2:180 : CMakeFiles/offboard_node_node.dir/all] Erreur 2
+make: *** [Makefile:141 : all] Erreur 2
