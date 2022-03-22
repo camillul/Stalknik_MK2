@@ -232,7 +232,6 @@ class SimulationNode(Node):
 
 
         self.simulation_pub.publish(msg)
-        # self.mapPub.publish(msg2)
         self.get_logger().info('Publishing simulation Position : "%s"' % msg.pose.position)
 
 
@@ -267,8 +266,8 @@ class SimulationNode(Node):
         """
         publish the drone transform for rviz
         """
+        
         tf_msg = TFMessage()
-
         transform_drone_msg = TransformStamped()
         transform_drone_msg.header.stamp = self.get_clock().now().to_msg()
         transform_drone_msg.child_frame_id = "Stalknik"
@@ -334,7 +333,7 @@ class SimulationNode(Node):
             torque=self.B@w2.flatten()
             E=eulermat(self.thetax,self.thetay,self.thetaz)
             dp=E@vr
-            # la matrice adjointe est nécéssaire pour la formule axe-angle et en avoir une matrice de rotation (provient d'un produit vectoriel)
+            # the adjoint matrix convert a vector to a matrix rotation
             dvr=-adjoint(wr)@vr+inv(E)@np.array([[0],[0],[self.g]])+np.array([[0],[0],[-torque[0]/self.m]])  
             dtheta= eulerderivative(self.thetax,self.thetay,self.thetaz) @ wr 
             

@@ -70,6 +70,10 @@ class ControlNode(Node):
         self.drone_orientation = np.array([0,0,0],np.float)
 
     def follow_up_callback(self, request, response):
+        """
+        Service callback
+        User API will call this service to change the follow scheme
+        """
         if request.mode == 1 :
             self.follow_choice = "above"
             self.get_logger().info('Incoming request : change for above follow_up')
@@ -78,7 +82,7 @@ class ControlNode(Node):
             self.get_logger().info('Incoming request : change for "spy" follow_up')
         if request.mode == 3 :
             self.follow_choice = "circle"
-            self.get_logger().info('Incoming request : change for "spy" follow_up')
+            self.get_logger().info('Incoming request : change for circle follow_up')
 
         response.result = "Done"
 

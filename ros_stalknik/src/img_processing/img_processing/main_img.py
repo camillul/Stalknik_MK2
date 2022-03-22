@@ -45,7 +45,7 @@ class ImgNode(Node):
         # Here we declare our parameters from YAML file
         self.declare_parameter('/Stalknik/IsTest',False)
         self.IsTest = self.get_parameter('/Stalknik/IsTest').get_parameter_value()
-        self.declare_parameter('/Stalknik/my_video_file',"file:///Users/rikic/Documents/Projet/Stalknik_MK2/PFE_video/outpy2.avi")
+        self.declare_parameter('/Stalknik/my_video_file',"error")
         self.my_video_file = self.get_parameter('/Stalknik/my_video_file').get_parameter_value().string_value
 
         # ****_sub and ****_pub are initialization for publisher and subscriber 
