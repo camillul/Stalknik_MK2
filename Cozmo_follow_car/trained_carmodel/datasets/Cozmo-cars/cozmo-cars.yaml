@@ -1,0 +1,7 @@
+path: ../datasets/Cozmo-cars
+train: images
+val: images
+test:
+# Classes
+nc: 1  # number of classes
+names: ['cars']  # class names
