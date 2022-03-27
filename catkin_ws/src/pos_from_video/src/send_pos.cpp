@@ -55,7 +55,7 @@ int main(int argc, char **argv)
             //to ensure safety, z need to be > 1.5
             pose_tmp.pose.position.z = pose_tmp.pose.position.z + 2;
         }
-        printf("x : %f, y: %f, z: %f;\n",pose_tmp.pose.position.x,pose_tmp.pose.position.y,pose_tmp.pose.position.z);
+        
         tab_pose_tmp[i] = pose_tmp;
     }
     int i = 0;
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
         if(send_next_pos == true) {
             i++;
         }
-        printf("i : %d;\n",i);
+        
         ros::spinOnce();
         rate.sleep();
     }

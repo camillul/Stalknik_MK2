@@ -1,7 +1,7 @@
 /**
  * @file offb_node.cpp
  * @author RODRIGUES Nicolas (nico.r648@gmail.com)
- * @brief Control of the uav, set it in offboard mode ; base on 
+ * @brief Control of the uav, set it in offboard mode ; based on 
  * Offboard control example node, written with MAVROS version 0.19.x, 
  * PX4 Pro Flight 
  * Stack and tested in Gazebo SITL
@@ -38,7 +38,7 @@ nav_msgs::Odometry current_local_pose;//current pose of the uav in uav space
  * 
  * @param msg msg get by the subscriber
  */
-void local_pos_cb(const nav_msgs::Odometry::ConstPtr& msg){
+void local_pose_cb(const nav_msgs::Odometry::ConstPtr& msg){
     current_local_pose = *msg;
 }
 
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     //Subscribe to "mavros/global_position/local" to get the local pose of the frame
     ros::Subscriber local_pos_sub = nh.subscribe<nav_msgs::Odometry>
-        ("mavros/global_position/local",10, local_pos_cb);
+        ("mavros/global_position/local",10, local_pose_cb);
     //Subscribe to "mavros/state" to get data
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>
             ("mavros/state", 10, state_cb);
