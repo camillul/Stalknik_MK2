@@ -27,25 +27,24 @@ class ImgProcessNode(Node):
    def __init__(self):
       super().__init__('img_process_node')
 
+
+      # Here we declare our parameters from YAML file
       self.declare_parameter('/Stalknik/my_yolo_file','error')
       self.my_yolo_file = self.get_parameter('/Stalknik/my_yolo_file').get_parameter_value().string_value
-
-      self.declare_parameter('/Stalknik/my_trained_model','C:/Users/rikic/Documents/Projet/Stalknik_MK2/Cozmo_follow_car/trained_carmodel/car_cozmo.pt')
+      self.declare_parameter('/Stalknik/my_trained_model','error')
       self.my_trained_model = self.get_parameter('/Stalknik/my_trained_model').get_parameter_value().string_value
-
       self.declare_parameter('/Stalknik/IsCustom',True)
       self.IsCustom = self.get_parameter('/Stalknik/IsCustom').get_parameter_value()
 
+        # ****_sub and ****_pub are initialization for publisher and subscriber 
+        # args : message type, "topic name", quality of service)
       self.car_position_pub = self.create_publisher(Pose, 'car_position', 10)
-
-
- 
-
       self.image_sub = self.create_subscription(
             Image,
             'image',
             self.img_callback, qos_profile_sensor_data  )
       self.image_sub  # prevent unused variable warning
+
 
       self.img_result = None
       self.latest_processed_image = None
@@ -110,6 +109,9 @@ class ImgProcessNode(Node):
 
 
    def imgmsg_to_cv2(self, img_msg, encode = "mono8"):
+      """
+      Allow to convert ros serielized messaged back to cv2 object
+      """
       if img_msg.encoding != encode:
          self.get_logger().info("This Coral detect node has been hardcoded to the 'bgr8' encoding.  Come change the code if you're actually trying to implement a new camera")
       dtype = np.dtype("uint8") # Hardcode to 8 bits...
@@ -124,10 +126,11 @@ class ImgProcessNode(Node):
 
    def from_xy_to_car_pos(self,x,y):
       """
-      this function give x,y position of the car for a drone, this one must be above 
-      
+      this function give x,y position of the car from a drone reference, 
+      work only for a drone with z > 0 and a cam not aiming straigth downside
+
       """
-      # FIXME:Ricky:14/02/2022: Don't work ahah and work only for a drone with z > 0 and a cam not aiming straigth downside
+      # FIXME:Ricky:14/02/2022: Not tested ?  
 
       self.min_fov_dist_x = self.drone_pos_vec[2] / np.tan(self.cam_angle - self.horizontal_angle_of_view/2)
       self.max_fov_dist_x = self.drone_pos_vec[2] / np.tan(self.cam_angle + self.horizontal_angle_of_view/2)
@@ -151,17 +154,17 @@ class ImgProcessNode(Node):
       """
       update car position with directly xc,yc which are position along respectively x, y robot axis reference
       """
-      print('from update')
-      print(float(xc) *float(0.010))
-      print(float(yc) *float(0.010))
-      print(self.car_pos_vec[0])
-      print(self.car_pos_vec[1])
-      self.car_pos_vec[0] = (float(xc) *float(0.0010)) 
+
+      self.car_pos_vec[0] = (float(xc) *float(0.0010))  #float(0.0010)allow to change from mm to m
       self.car_pos_vec[1] = (float(yc) *float(0.0010))
       self.car_pos_vec[2] = 0
 
    def img_process_callback(self):
-      
+      """
+        This function is callback and raise at some event
+        It will publish the car position from image processing
+
+      """
       self.get_logger().info('img_callback')
       self.finish_process = False
       if self.IsCustom :
@@ -171,28 +174,20 @@ class ImgProcessNode(Node):
 
       else :
          self.car_detection(self.new_image_to_process)
-         # while(not self.finish_process):
-         #    pass
 
-      
+      # self.finish_process ensure that the image processing have been done
       if (self.finish_process == True) : 
 
-         # self.latest_processed_image = self.new_image_to_process
-         msg = Pose()
-         # vec = self.car_pos_vec.flatten()
-         print("from publisher")
-         print(self.car_pos_vec[0])
-         print(float(self.car_pos_vec[0]))
-         print(self.car_pos_vec[1])
-         print(float(self.car_pos_vec[1]))
-         msg.position.x = float(self.car_pos_vec[0])
-         msg.position.y = float(self.car_pos_vec[1])
-         msg.position.z = float(self.car_pos_vec[2])
+
+         car_pose_msg = Pose()
+         car_pose_msg.position.x = float(self.car_pos_vec[0])
+         car_pose_msg.position.y = float(self.car_pos_vec[1])
+         car_pose_msg.position.z = float(self.car_pos_vec[2])
 
          # TODO:Ricky:04/03/2022: Implement rotation detection
 
-         self.car_position_pub.publish(msg)
-         self.get_logger().info('Publishing : "%s"' % msg.position)
+         self.car_position_pub.publish(car_pose_msg)
+         self.get_logger().info('Publishing : "%s"' % car_pose_msg.position)
 
          cv2.imshow('img_processing', self.img_result)
 
@@ -208,13 +203,13 @@ class ImgProcessNode(Node):
 
 
    def img_callback(self,msg):
+   """
+        This function is callback and raise at some event
+        It will subscribe the image we want to process
+   """
 
-      self.get_logger().info("sub callback")
-      
-      # self.new_image_to_process = self.imgmsg_to_cv2(msg)
       try:
          self.new_image_to_process = self.imgmsg_to_cv2(msg)
-         # self.new_image_to_process = np.array(self.frame, dtype=np.uint8)
          self.get_logger().info("Image Received")
          if self.new_image_to_process is not None:
             cv2.imshow('Received by img_processing', self.new_image_to_process)
@@ -223,8 +218,6 @@ class ImgProcessNode(Node):
          pass
 
 
-      # Convert the image to a Numpy array since most cv2 functions
-      # require Numpy arrays.
       
 
    def car_detection(self,img):
@@ -233,12 +226,14 @@ class ImgProcessNode(Node):
       detector.setModelPath(self.my_yolo_file)
       detector.loadModel()
       returned_image, detections, extracted_objects = detector.detectObjectsFromImage(input_image=img,input_type="array",output_type="array",extract_detected_objects=True, minimum_percentage_probability=20)
-      
+      # TODO:Ricky:21:03/2022: Need to retrieve w, and h from extrated object
+      # Width and Height of the detection rectangle
+      w = x2-x1
+      h = y2-y1
+      self.from_xy_to_car_pos(w,h)       
       self.finish_process = True
       
    def custom_car_detection(self,img):
-
-
 
       x1 = 0
       y1 = 0
@@ -288,10 +283,7 @@ class ImgProcessNode(Node):
          yp = C_r[1] + gamma * (P_r[1] - C_r[1])
 
          self.update_car_pos(xp,yp)
-         # Width and Height of the detection rectangle
-         # w = x2-x1
-         # h = y2-y1
-         # self.from_xy_to_car_pos(w,h) 
+
 
          self.img_result = open_cv_image
          self.get_logger().info('Custom detection Done')

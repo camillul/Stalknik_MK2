@@ -12,6 +12,8 @@ from rclpy.qos import qos_profile_sensor_data
 
 def cv2_to_imgmsg(cv_image, encode ="mono8"):
     """
+    This function allow to pass cv_image with ROS messages
+
     mono8: CV_8UC1, grayscale image
 
     mono16: CV_16UC1, 16-bit grayscale image
@@ -39,14 +41,15 @@ class ImgNode(Node):
     def __init__(self):
         super().__init__('img_node')
 
+
+        # Here we declare our parameters from YAML file
         self.declare_parameter('/Stalknik/IsTest',False)
         self.IsTest = self.get_parameter('/Stalknik/IsTest').get_parameter_value()
-
-        self.declare_parameter('/Stalknik/my_video_file',"file:///Users/rikic/Documents/Projet/Stalknik_MK2/PFE_video/outpy2.avi")
-
+        self.declare_parameter('/Stalknik/my_video_file',"error")
         self.my_video_file = self.get_parameter('/Stalknik/my_video_file').get_parameter_value().string_value
-        self.i= 0
 
+        # ****_sub and ****_pub are initialization for publisher and subscriber 
+        # args : message type, "topic name", quality of service)
         self.image_pub = self.create_publisher(Image, 'image', qos_profile_sensor_data )
 
         if self.IsTest:
@@ -57,44 +60,26 @@ class ImgNode(Node):
             timer_period = 0.1
             self.timer = self.create_timer(timer_period, self.img_callback)
         
-
+        self.i= 0
 
 
     def img_callback(self):
+        """
+        This function is callback and raise at some event
+        It will publish the image that must be processed for car detection
 
+        """
 
         if self.IsTest:
             while(self.cap.isOpened()): 
                 ret, frame = self.cap.read() 
                 if ret == True: 
                     cv2.imshow('from_img_acquisition', frame) 
-                    
-                    # msg = Image()
-                    # msg.header.stamp = Node.get_clock(self).now().to_msg()
-                    # msg.header.frame_id = 'TestVideo'
-                    # msg.height = np.shape(frame)[0]
-                    # msg.width = np.shape(frame)[1]
-                    # msg.encoding = "bgr8"
-                    # msg.is_bigendian = False
-                    # msg.step = np.shape(frame)[2] * np.shape(frame)[1]
-                    # msg.data = np.array(frame).tobytes()
 
-                    # publishes message
-
-
-
-
-                    # msg = self.br.cv2_to_imgmsg(frame)
-                    
                     self.image_pub.publish(cv2_to_imgmsg(frame))
-                    # self.test = self.br.imgmsg_to_cv2(self.br.cv2_to_imgmsg(frame), "bgr8")
-
-              
-                    # self.image_pub.publish(msg)
                     
                     self.get_logger().info('%d Images Published' % self.i)
                     self.i += 1
-
 
                     if cv2.waitKey(25) & 0xFF == ord('q'):
                         self.cap.release() 
@@ -111,11 +96,6 @@ class ImgNode(Node):
                 cv2.destroyAllWindows()                
                 pass
             
-
-            # self.image_pub.publish(self.bridge.cv2_to_imgmsg(np.array(self.cv_image), "bgr8"))
-            # self.get_logger().info('Publishing an image')
-            # frame = self.cv_image
-            # processes image data and converts to ros 2 message
 
 
 def main(args=None):

@@ -5,7 +5,7 @@ from std_msgs.msg import String
 from geometry_msgs.msg import Pose
 from drone_interfaces.msg import Motor
 
-pose = Pose();
+pose = Pose()
 class Actuator_node(Node):
 
     def __init__(self):

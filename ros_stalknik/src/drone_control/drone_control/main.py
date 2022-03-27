@@ -32,6 +32,9 @@ class ControlNode(Node):
 
     def __init__(self):
         super().__init__('control_node')
+
+        # ****_sub and ****_pub are initialization for publisher and subscriber 
+        # args : message type, "topic name", quality of service)
         self.drone_command_pub = self.create_publisher(Pose, 'drone_command', 10)
         self.car_position_sub = self.create_subscription(
             Pose,
@@ -45,22 +48,32 @@ class ControlNode(Node):
             self.drone_position_callback,
             10)
         self.drone_position_sub  # prevent unused variable warning
+
+        # These are parameters for the "follow_up_callback" 
+        self.follow_choice = "above"
+        self.z_offset = 1.5
+        self.distance_follow = 2
+        # This init a server that will allow to create some request from the user and then change parameters
         self.srv = self.create_service(FollowUp, 'follow_up_service', self.follow_up_callback)   
-        
+
+        # timer is a timer/thread that call the callback function every t/timer_period/dt  seconds
         self.timer_period = 0.5  # seconds
         self.timer = self.create_timer(self.timer_period, self.drone_command_callback)
         self.i = float(0)
 
-        self.follow_choice = "above"
-        self.z_offset = 1.5
-        self.distance_follow = 2
 
+
+        # initialization of position and rotation array for our car and drone
         self.car_pos = np.array([0,0,0],np.float)
         self.car_orientation = np.array([0,0,0],np.float)
         self.drone_pos = np.array([0,0,0],np.float)
         self.drone_orientation = np.array([0,0,0],np.float)
 
     def follow_up_callback(self, request, response):
+        """
+        Service callback
+        User API will call this service to change the follow scheme
+        """
         if request.mode == 1 :
             self.follow_choice = "above"
             self.get_logger().info('Incoming request : change for above follow_up')
@@ -69,7 +82,7 @@ class ControlNode(Node):
             self.get_logger().info('Incoming request : change for "spy" follow_up')
         if request.mode == 3 :
             self.follow_choice = "circle"
-            self.get_logger().info('Incoming request : change for "spy" follow_up')
+            self.get_logger().info('Incoming request : change for circle follow_up')
 
         response.result = "Done"
 
@@ -77,20 +90,27 @@ class ControlNode(Node):
 
 
     def drone_command_callback(self):
-    # TODO:01/02/2022:CAMILLE:Implement this publisher
+        """
+        This function is callback and raise at some event
+        It will check which scenario has been chosen and then publish the according drone position/rotation aimed
+
+        """
+
+        drone_command_msg = Pose()
+        
         if (self.follow_choice == "above") :
-        # this will just give a z offset
-            msg = Pose()
+        # in this situation, we will just give a z offset and will follow the car on x,y world axis
 
-            msg.position.x = float(self.car_pos[0])
-            msg.position.y = float(self.car_pos[1])
-            msg.position.z = float(self.z_offset)
 
-            self.drone_command_pub.publish(msg)
-            self.get_logger().info('Publishing above mode: "%s"' % msg.position)
+            drone_command_msg.position.x = float(self.car_pos[0])
+            drone_command_msg.position.y = float(self.car_pos[1])
+            drone_command_msg.position.z = float(self.z_offset)
+
+            self.drone_command_pub.publish(drone_command_msg)
+            self.get_logger().info('Publishing above mode: "%s"' % drone_command_msg.position)
 
         if (self.follow_choice == "behind") :
-        # In this situation, ou drone wil keep a distance from the car but will keep "looking" toward that car
+        # In this situation, our drone will keep a maximum distance from the car and will keep "looking" toward that car
             distance = (self.car_pos - self.drone_pos)
             q_command = quaternion_from_euler(float(0),float(0),float(np.arctan2(distance[1],distance[0])))
 
@@ -99,23 +119,23 @@ class ControlNode(Node):
             else : 
                 self.drone_command =  self.drone_pos
 
-            msg = Pose()
+            drone_command_msg = Pose()
 
             print("from node control")
             print(float(self.drone_pos[0]))
             print(float(self.drone_pos[1]))
 
-            msg.position.x = float(self.drone_pos[0])
-            msg.position.y = float(self.drone_pos[1])
-            msg.position.z = float(self.drone_pos[2])
+            drone_command_msg.position.x = float(self.drone_pos[0])
+            drone_command_msg.position.y = float(self.drone_pos[1])
+            drone_command_msg.position.z = float(self.drone_pos[2])
 
-            msg.orientation.x = q_command[0]
-            msg.orientation.y = q_command[1]
-            msg.orientation.z = q_command[2]
-            msg.orientation.w = q_command[3]
+            drone_command_msg.orientation.x = q_command[0]
+            drone_command_msg.orientation.y = q_command[1]
+            drone_command_msg.orientation.z = q_command[2]
+            drone_command_msg.orientation.w = q_command[3]
 
-            self.drone_command_pub.publish(msg)
-            self.get_logger().info('Publishing behind mode : "%s"' % msg.position)
+            self.drone_command_pub.publish(drone_command_msg)
+            self.get_logger().info('Publishing behind mode : "%s"' % drone_command_msg.position)
 
 
         if (self.follow_choice == "circle") :
@@ -125,7 +145,10 @@ class ControlNode(Node):
 
 
     def car_position_callback(self,msg):
-  
+        """
+        This function is raised every time the associated topic receive a new message
+        this function update our informations on the current (estimated) car position/orientation
+        """
         self.get_logger().info('I received car_position: "%s"' % msg.position)
         self.car_pos = np.array([msg.position.x,msg.position.y,msg.position.z])
         self.car_orientation = np.array([msg.orientation.x,msg.orientation.y,msg.orientation.z,msg.orientation.w])
@@ -133,7 +156,10 @@ class ControlNode(Node):
 
 
     def drone_position_callback(self,msg):
-
+        """
+        This function is raised every time the associated topic receive a new message
+        this function update our informations on the current (estimated) drone position/orientation
+        """
         self.get_logger().info('I received drone_position: "%s"' % msg.position)
         self.drone_pos = np.array([msg.position.x,msg.position.y,msg.position.z])
         self.drone_orientation = np.array([msg.orientation.x,msg.orientation.y,msg.orientation.z,msg.orientation.w])
