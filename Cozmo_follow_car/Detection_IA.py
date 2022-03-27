@@ -104,9 +104,8 @@ def stream_camera(robot: cozmo.robot.Robot):
             xp = C_r[0] + gamma * (P_r[0] - C_r[0])
             yp = C_r[1] + gamma * (P_r[1] - C_r[1])
 
-            # Width and Height of the detection rectangle
+            # Width of the detection rectangle
             w = x2-x1
-            h = y2-y1
 
             # Control law of the linear speed of Cozmo
             line_speed = xp*0.3
@@ -114,19 +113,7 @@ def stream_camera(robot: cozmo.robot.Robot):
                 line_speed = 20
                 
             # Control law of the rotationnal speed of Cozmo
-            rot_speed_old = rot_speed
             rot_speed = (160-(x1+(w/2)))
-
-            # Dection of a change of rotation direction
-            # Cozmo robot has priorization for a null command send its motors so, we want the
-            # to send him 
-            # TO BE TESTED
-            signe = bool(np.sign(rot_speed)+1)
-            signe_old = bool(np.sign(rot_speed_old)+1)
-            
-            if (signe ^ signe_old) == True and rot_speed_old != 0: 
-                rot_speed = 0
-                print('change rotational direction')
 
             # Combination of rotational and linear speed to send a command to Cozmo wheels.
             r_rot_wheel = line_speed+K*rot_speed
@@ -147,7 +134,7 @@ def stream_camera(robot: cozmo.robot.Robot):
             robot.drive_wheels(l_rot_wheel, r_rot_wheel)
             
             # Image Display
-            cv2.imshow('landmark',open_cv_image) 
+            cv2.imshow('Follow_car',open_cv_image) 
 
         # Press "esc" to quit the program
         if cv2.waitKey(33) == 27:
@@ -157,4 +144,4 @@ def stream_camera(robot: cozmo.robot.Robot):
 cozmo.robot.Robot.drive_off_charger_on_connect = False
 
 # Starting main program on Cozmo
-cozmo.run_program(stream_camera)
+cozmo.run_program(stream_camera, use_3d_viewer=True)

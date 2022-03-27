@@ -44,10 +44,6 @@ T_rc = T_rc @ ([[0, 0, 1, 0],
 print(T_rc)
 
 
-# MatrixCamera = np.array([[293.34562141,   0.,         167.74886443],
-#                             [  0.,         292.63154389, 107.3285527 ],
-#                             [  0.,           0.,           1.        ]])
-
 # Matrix of the Cozmo camera (pinhole model) given by "Calibration_Camera.py"
 MatrixCamera = np.array([[291.41193986,   0.,        170.58829057],
                         [  0.,         291.0430028, 108.7210315 ],
@@ -64,9 +60,9 @@ cy = MatrixCamera[1][2]
 
 # Distance of the point from the robot landmark
 u=170
-v=163 #10cm
-# v=115.5 #15cm
-#v=93  #20cm
+v=163 #point at 10cm
+# v=115.5 #point at 15cm
+#v=93  #point at 20cm
 
 # (x,y) are the coordinates of the projection point in pixels
 x = (u - cx)/fx
