@@ -56,24 +56,27 @@ cx = MatrixCamera[0][2]
 cy = MatrixCamera[1][2]
 
 # Distance of the point from the robot landmark
-u=170
-v=163 #point at 10cm
-# v=115.5 #point at 15cm
-#v=93  #point at 20cm
+for i in [163,115.5,93]:
+    u = 170
+    v = i
+    
+    #v=163 #point at 10cm
+    #v=115.5 #point at 15cm
+    #v=93  #point at 20cm
 
-# (x,y) are the coordinates of the projection point in pixels
-x = (u - cx)/fx
-y = (v - cy)/fy
+    # (x,y) are the coordinates of the projection point in pixels
+    x = (u - cx)/fx
+    y = (v - cy)/fy
 
-# Calculation of the coordinates of the point of intersection between the plane of the ground 
-# and the vector corresponding to the selected point of the image, along the optical axis
-C_r = T_rc @ np.array ([0,0,0,1])
-P_r = T_rc @ np.array ([x,y,1,1])
+    # Calculation of the coordinates of the point of intersection between the plane of the ground 
+    # and the vector corresponding to the selected point of the image, along the optical axis
+    C_r = T_rc @ np.array ([0,0,0,1])
+    P_r = T_rc @ np.array ([x,y,1,1])
 
-gamma = -C_r[2]/(P_r[2]-C_r[2])
+    gamma = -C_r[2]/(P_r[2]-C_r[2])
 
-# Coordinates of the point in the robot landmark.
-xp = C_r[0] + gamma * (P_r[0] - C_r[0])
-yp = C_r[1] + gamma * (P_r[1] - C_r[1])
+    # Coordinates of the point in the robot landmark.
+    xp = C_r[0] + gamma * (P_r[0] - C_r[0])
+    yp = C_r[1] + gamma * (P_r[1] - C_r[1])
 
-print(xp,yp)
+    print(xp,yp)
