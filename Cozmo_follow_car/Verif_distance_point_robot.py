@@ -41,9 +41,6 @@ T_rc = T_rc @ ([[0, 0, 1, 0],
                 [0, -1, 0, 0],
                 [0, 0, 0, 1]])
 
-print(T_rc)
-
-
 # Matrix of the Cozmo camera (pinhole model) given by "Calibration_Camera.py"
 MatrixCamera = np.array([[291.41193986,   0.,        170.58829057],
                         [  0.,         291.0430028, 108.7210315 ],
