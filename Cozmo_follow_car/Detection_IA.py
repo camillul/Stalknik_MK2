@@ -46,7 +46,8 @@ def stream_camera(robot: cozmo.robot.Robot):
     robot.camera.image_stream_enabled = True
     robot.camera.color_image_enabled  = False
 
-    #Proportional corrector coefficients of rotational speed
+    #Proportional corrector coefficients of linear and rotational speed
+    C=0.3
     K=0.2
 
     # Variables initialisation
@@ -108,16 +109,16 @@ def stream_camera(robot: cozmo.robot.Robot):
             w = x2-x1
 
             # Control law of the linear speed of Cozmo
-            line_speed = xp*0.3
-            if line_speed >= 120:
-                line_speed = 20
+            line_speed = xp
+            if line_speed >= 120/0.3:
+                line_speed = 20/0.3
                 
             # Control law of the rotationnal speed of Cozmo
             rot_speed = (160-(x1+(w/2)))
 
             # Combination of rotational and linear speed to send a command to Cozmo wheels.
-            r_rot_wheel = line_speed+K*rot_speed
-            l_rot_wheel = line_speed-K*rot_speed
+            r_rot_wheel = C*line_speed+K*rot_speed
+            l_rot_wheel = C*line_speed-K*rot_speed
 
             # If the distance between the robot center (in the robot landmark) and the bottom of the rear
             # of the car is less than 80mm, stop the robot
