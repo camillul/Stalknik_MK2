@@ -14,15 +14,15 @@
 #include <stdio.h>
 #include <geometry_msgs/PoseStamped.h>
 
-bool send_next_pos = false;//To know if the next pose is needed
+bool send_next_pose = false;//To know if the next pose is needed
 /**
  * @brief Call by the subscription to the topic "send_next_pose" to store the bool
  * 
  * @param msg msg get by the subscriber
  */
-void next_pos_cb(const std_msgs::Bool::ConstPtr& msg){
-    std_msgs::Bool next_pos = *msg;
-    send_next_pos = next_pos.data;
+void next_pose_cb(const std_msgs::Bool::ConstPtr& msg){
+    std_msgs::Bool next_pose = *msg;
+    send_next_pose = next_pose.data;
 }
 
 int main(int argc, char **argv)
@@ -30,11 +30,11 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "send_pos_node");
     ros::NodeHandle nh;
     //Publish to "drone_pose_to_go" to push the pose to go
-    ros::Publisher current_pos_to_go = nh.advertise<geometry_msgs::PoseStamped>
+    ros::Publisher current_pose_to_go = nh.advertise<geometry_msgs::PoseStamped>
         ("drone_pose_to_go", 10);
     //Subscribe to "send_next_pose" to know if the node has to send the next pose
     ros::Subscriber send_next_sub = nh.subscribe<std_msgs::Bool>
-        ("send_next_pose", 10, next_pos_cb);
+        ("send_next_pose", 10, next_pose_cb);
     //to match the publishing rate needed by the offb_node
     ros::Rate rate(20.0);
 
@@ -63,8 +63,8 @@ int main(int argc, char **argv)
         if(i == 5){
             i = 0;
         }
-        current_pos_to_go.publish(tab_pose_tmp[i]);
-        if(send_next_pos == true) {
+        current_pose_to_go.publish(tab_pose_tmp[i]);
+        if(send_next_pose == true) {
             i++;
         }
         

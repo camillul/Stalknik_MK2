@@ -58,13 +58,13 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "offb_node");
     ros::NodeHandle nh;
     //Subscribe to "mavros/global_position/local" to get the local pose of the frame
-    ros::Subscriber local_pos_sub = nh.subscribe<nav_msgs::Odometry>
+    ros::Subscriber local_pose_sub = nh.subscribe<nav_msgs::Odometry>
         ("mavros/global_position/local",10, local_pose_cb);
     //Subscribe to "mavros/state" to get data
     ros::Subscriber state_sub = nh.subscribe<mavros_msgs::State>
             ("mavros/state", 10, state_cb);
     //Publish to "mavros/setpoint_position/local" to push data on controller
-    ros::Publisher local_pos_pub = nh.advertise<geometry_msgs::PoseStamped>
+    ros::Publisher local_pose_pub = nh.advertise<geometry_msgs::PoseStamped>
             ("mavros/setpoint_position/local", 10);
     //Ask the uav a service, here to arm the uav
     ros::ServiceClient arming_client = nh.serviceClient<mavros_msgs::CommandBool>
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
     ros::Publisher send_next_pose_pub = nh.advertise<std_msgs::Bool>
         ("send_next_pose", 10);
     //Subscribe to "mavros/state" to get the pose to reach
-    ros::Subscriber current_pos_to_go_sub = nh.subscribe<geometry_msgs::PoseStamped>
+    ros::Subscriber current_pose_to_go_sub = nh.subscribe<geometry_msgs::PoseStamped>
         ("drone_pose_to_go", 10, pose_to_go_cb);
     
     //the setpoint publishing rate MUST be faster than 2Hz
@@ -102,7 +102,7 @@ int main(int argc, char **argv)
             
             
         
-        local_pos_pub.publish(pose);
+        local_pose_pub.publish(pose);
         ros::spinOnce();
         rate.sleep();
     }
@@ -138,7 +138,7 @@ int main(int argc, char **argv)
                 last_request = ros::Time::now();
             }
         }
-        local_pos_pub.publish(pose);
+        local_pose_pub.publish(pose);
         pose.pose.position.x = pose_to_go.pose.position.x;
         pose.pose.position.y = pose_to_go.pose.position.y;
         pose.pose.position.z = pose_to_go.pose.position.z;
@@ -149,7 +149,7 @@ int main(int argc, char **argv)
             || (current_local_pose.pose.pose.position.y < pose.pose.position.y - 1 || current_local_pose.pose.pose.position.y > pose.pose.position.y + 1)
             || (current_local_pose.pose.pose.position.x < pose.pose.position.x - 1 || current_local_pose.pose.pose.position.x > pose.pose.position.x + 1))
             {
-                local_pos_pub.publish(pose);
+                local_pose_pub.publish(pose);
                 ros::spinOnce();
                 rate.sleep();
             } 
